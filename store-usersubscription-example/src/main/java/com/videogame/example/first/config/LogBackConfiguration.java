@@ -25,7 +25,7 @@ private void addLogstashAppender(LoggerContext context) {
     LogstashTcpSocketAppender logstashAppender = new LogstashTcpSocketAppender(); 
     logstashAppender.setName(LOGSTASH_APPENDER_NAME);
     logstashAppender.setContext(context);
-    String customFields = "{\"servicename\":\"" + this.appName + "\"}"; <3>
+    String customFields = "{\"servicename\":\"" + this.appName + "\"}";
     // More documentation is available at: https://github.com/logstash/logstash-logback-encoder
     LogstashEncoder logstashEncoder = new LogstashEncoder();
     // Set the Logstash appender config
