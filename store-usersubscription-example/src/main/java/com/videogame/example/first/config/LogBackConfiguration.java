@@ -1,3 +1,8 @@
+package com.videogame.example.first;
+
+import net.logstash.logback.*;
+import ch.qos.logback.*;
+
 @Configuration
 public class LogbackConfiguration {
     private static final String LOGSTASH_APPENDER_NAME = "LOGSTASH";
