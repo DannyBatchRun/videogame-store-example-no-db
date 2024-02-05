@@ -1,7 +1,16 @@
-package com.videogame.example.first;
+package com.videogame.example.first.config;
 
-import net.logstash.logback.*;
-import ch.qos.logback.*;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.LoggerContext;
+import net.logstash.logback.appender.LogstashTcpSocketAppender;
+import net.logstash.logback.encoder.LogstashEncoder;
+import net.logstash.logback.stacktrace.ShortenedThrowableConverter;
+import ch.qos.logback.classic.AsyncAppender;
+import java.net.InetSocketAddress;
+
 
 @Configuration
 public class LogbackConfiguration {
