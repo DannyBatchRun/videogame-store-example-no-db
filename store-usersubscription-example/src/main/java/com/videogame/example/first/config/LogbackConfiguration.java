@@ -16,7 +16,7 @@ import java.net.InetSocketAddress;
 public class LogbackConfiguration {
     private static final String LOGSTASH_APPENDER_NAME = "LOGSTASH";
     private static final String ASYNC_LOGSTASH_APPENDER_NAME = "ASYNC_LOGSTASH";
-    private final Logger LOG = LoggerFactory.getLogger(LogbackConfiguration.class); // Changed here
+    private final Logger LOG = LoggerFactory.getLogger(LoggingConfiguration.class);
     private final LoggerContext CONTEXT = (LoggerContext) LoggerFactory.getILoggerFactory();
     private final String appName;
     private final String logstashHost;
@@ -32,7 +32,6 @@ public class LogbackConfiguration {
         this.logstashPort = logstashPort; 
         this.logstashQueueSize = logstashQueueSize; 
         addLogstashAppender(CONTEXT);
-    }
 }
 
 private void addLogstashAppender(LoggerContext context) {
