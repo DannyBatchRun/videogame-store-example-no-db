@@ -1,25 +1,26 @@
 @Configuration
 public class LogbackConfiguration {
-  private static final String LOGSTASH_APPENDER_NAME = "LOGSTASH";
-  private static final String ASYNC_LOGSTASH_APPENDER_NAME = "ASYNC_LOGSTASH";
-  private final Logger LOG = LoggerFactory.getLogger(LoggingConfiguration.class);
-  private final LoggerContext CONTEXT = (LoggerContext) LoggerFactory.getILoggerFactory();
-  private final String appName;
-  private final String logstashHost;
-  private final Integer logstashPort;
-  private final Integer logstashQueueSize;
-  public LogbackConfiguration(
-  @Value("${spring.application.name}") String appName,
-  @Value("${logstash.host}") String logstashHost,
-  @Value("${logstash.port}") Integer logstashPort,
-  @Value("${logstash.queue-size}") Integer logstashQueueSize) {
-  this.appName = appName; 
-  this.logstashHost = logstashHost; 
-  this.logstashPort = logstashPort; 
-  this.logstashQueueSize = logstashQueueSize; 
-  addLogstashAppender(CONTEXT);
-  }
-  private void addLogstashAppender(LoggerContext context) {
+    private static final String LOGSTASH_APPENDER_NAME = "LOGSTASH";
+    private static final String ASYNC_LOGSTASH_APPENDER_NAME = "ASYNC_LOGSTASH";
+    private final Logger LOG = LoggerFactory.getLogger(LoggingConfiguration.class);
+    private final LoggerContext CONTEXT = (LoggerContext) LoggerFactory.getILoggerFactory();
+    private final String appName;
+    private final String logstashHost;
+    private final Integer logstashPort;
+    private final Integer logstashQueueSize;
+    public LogbackConfiguration(
+        @Value("${spring.application.name}") String appName,
+        @Value("${logstash.host}") String logstashHost,
+        @Value("${logstash.port}") Integer logstashPort,
+        @Value("${logstash.queue-size}") Integer logstashQueueSize) {
+        this.appName = appName; 
+        this.logstashHost = logstashHost; 
+        this.logstashPort = logstashPort; 
+        this.logstashQueueSize = logstashQueueSize; 
+        addLogstashAppender(CONTEXT);
+}
+
+private void addLogstashAppender(LoggerContext context) {
     LOG.info("Initializing Logstash logging");
     LogstashTcpSocketAppender logstashAppender = new LogstashTcpSocketAppender(); 
     logstashAppender.setName(LOGSTASH_APPENDER_NAME);
@@ -31,7 +32,7 @@ public class LogbackConfiguration {
     logstashEncoder.setCustomFields(customFields);
     logstashAppender.addDestinations( 
     new InetSocketAddress(this.logstashHost, this.logstashPort) 
-  );
+    );
     ShortenedThrowableConverter throwableConverter = new ShortenedThrowableConverter();
     throwableConverter.setRootCauseFirst(true);
     logstashEncoder.setThrowableConverter(throwableConverter);
@@ -46,5 +47,5 @@ public class LogbackConfiguration {
     asyncLogstashAppender.addAppender(logstashAppender); 
     asyncLogstashAppender.start(); 
     context.getLogger("ROOT").addAppender(asyncLogstashAppender); 
-  }
+    }
 }
