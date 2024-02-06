@@ -9,9 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestTemplate;
-
 import com.videogame.example.second.model.Videogame;
 
 import java.util.*;
@@ -29,22 +26,11 @@ public class SubscriptionController {
 						 "Otherwise, please delete with /remove/{idProduct} <--- Instead of idProduct, select the id you want to delete.";
 					return new ResponseEntity<>(welcome, HttpStatus.OK);
 	}
-
+	
 	@GetMapping("/health")
-    	public ResponseEntity<String> checkStatus(HttpServletRequest request) {
-	        RestTemplate restTemplate = new RestTemplate();
-	        String url = request.getRequestURL().toString();
-	        try {
-	            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-	            if (response.getStatusCodeValue() == 200) {
-	                return new ResponseEntity<>("Service is up", HttpStatus.OK);
-	            } else {
-	                return new ResponseEntity<>("Service is down", HttpStatus.SERVICE_UNAVAILABLE);
-	            }
-	        } catch (HttpStatusCodeException ex) {
-	            return new ResponseEntity<>("Error occurred", HttpStatus.SERVICE_UNAVAILABLE);
-	        }
-    	}
+	public ResponseEntity<String> checkStatus() {
+		return new ResponseEntity<>("Service is up and running", HttpStatus.OK);
+	}
 	
 	@GetMapping("/videogames") 
 	public List<Videogame> getVideogames() {
