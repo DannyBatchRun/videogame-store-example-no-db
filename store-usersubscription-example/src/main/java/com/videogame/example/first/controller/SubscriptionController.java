@@ -33,20 +33,9 @@ public class SubscriptionController {
 	}
 
 	@GetMapping("/health")
-    	public ResponseEntity<String> checkStatus(HttpServletRequest request) {
-	        RestTemplate restTemplate = new RestTemplate();
-	        String url = request.getRequestURL().toString();
-	        try {
-	            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-	            if (response.getStatusCodeValue() == 200) {
-	                return new ResponseEntity<>("Service is up", HttpStatus.OK);
-	            } else {
-	                return new ResponseEntity<>("Service is down", HttpStatus.SERVICE_UNAVAILABLE);
-	            }
-	        } catch (HttpStatusCodeException ex) {
-	            return new ResponseEntity<>("Error occurred", HttpStatus.SERVICE_UNAVAILABLE);
-	        }
-    	}
+	public ResponseEntity<String> checkStatus() {
+		return new ResponseEntity<>("Service is up and running", HttpStatus.OK);
+	}
 	
 	@PostMapping("/add/monthlysubscription")
 	public Map<String, Client> addMontlyClientSubscription(@Validated @RequestBody Client client) {
