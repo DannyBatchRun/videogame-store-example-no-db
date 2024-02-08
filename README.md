@@ -9,9 +9,9 @@ Enjoy!
 
 # Update 02/08/2024
 
-This project now have new integration :<br />
+This project have now the following integrations :<br />
 <br />
-<strong>- Added Dependencies with Actuator, Prometheus and Logstash with its configuration files.</strong><br //>
+<strong>- Added Dependencies with Actuator, Prometheus and Logstash with its configuration files.</strong><br />
 <strong>- Added Cucumber Test Automation with dependencies and configuration based on NodeJS.</strong><br />
 <strong>- Removed simple Jenkins Groovy Files, replaced by another files with High-Level Language CI/CD based.</strong><br />
 
