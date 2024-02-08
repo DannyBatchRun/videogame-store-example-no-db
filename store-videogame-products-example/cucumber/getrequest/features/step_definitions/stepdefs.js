@@ -7,7 +7,7 @@ let apiEndpoint;
 let response;
 
 Given('I set GET service api endpoint', function () {
-  apiEndpoint = 'http://localhost:8081/registered';
+  apiEndpoint = 'http://localhost:8100/videogames';
 });
 
 Then('send a GET HTTP request', async function () {
