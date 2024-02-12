@@ -5,16 +5,16 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.5</version>
+		<version>3.2.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.videogame.example</groupId>
 	<artifactId>first</artifactId>
-	<version>1.0</version>
+	<version>3.0.0</version>
 	<name>videogame-example-first</name>
 	<description>Esempio di un ECommerce di Videogiochi</description>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
