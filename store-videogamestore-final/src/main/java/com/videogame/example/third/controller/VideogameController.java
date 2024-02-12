@@ -32,12 +32,12 @@ public class VideogameController {
     @GetMapping("/synchronize")
     public String synchronizeAll() {
         RestTemplate restTemplate = new RestTemplate();
-        Videogame[] videogameArray = restTemplate.getForObject("http://localhost:8100/videogames", Videogame[].class);
+        Videogame[] videogameArray = restTemplate.getForObject("http://videogameproducts:8100/videogames", Videogame[].class);
         if (videogameArray != null) {
             List<Videogame> videogameList = Arrays.asList(videogameArray);
             videogames.addAll(videogameList);
         }
-        Client[] clientArray = restTemplate.getForObject("http://localhost:8081/registered", Client[].class);
+        Client[] clientArray = restTemplate.getForObject("http://usersubscription2:8081/registered", Client[].class);
         if (clientArray != null) {
             List<Client> clientList = Arrays.asList(clientArray);
             clients.addAll(clientList);
