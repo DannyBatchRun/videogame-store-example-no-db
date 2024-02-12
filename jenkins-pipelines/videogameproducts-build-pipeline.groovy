@@ -5,7 +5,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 script {
-                    sh("git clone https://github.com/VintageMachine/videogame-store-example-no-db.git")
+                    sh("git clone https://github.com/DannyBatchRun/videogame-store-example-no-db.git")
                     dir("videogame-store-example-no-db") {
                         sh("git checkout ${BRANCH_NAME}")
                     }
