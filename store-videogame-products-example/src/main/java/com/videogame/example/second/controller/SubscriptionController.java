@@ -13,8 +13,6 @@ import com.videogame.example.second.model.Videogame;
 
 import java.util.*;
 
-import javax.servlet.http.HttpServletRequest;
-
 @RestController
 public class SubscriptionController {
 	
