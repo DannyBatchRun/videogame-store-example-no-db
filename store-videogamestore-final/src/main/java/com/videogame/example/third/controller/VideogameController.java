@@ -46,7 +46,10 @@ public class VideogameController {
     }
 
     @PostMapping("/add/cart")
-    public Map<String, Client> addVideogameToCart(@Validated @RequestBody String videogameName, @Validated @RequestBody String clientName, @Validated @RequestBody String clientSurname) {
+    public Map<String, Client> addVideogameToCart@Validated @RequestBody Map<String, String> requestBody) {
+        String videogameName = requestBody.get("videogameName");
+        String clientName = requestBody.get("clientName");
+        String clientSurname = requestBody.get("clientSurname");
         Map<String, Client> responseMap = new HashMap<>();
         for (Videogame videogame : videogames) {
             if (videogame.getName().equals(videogameName)) {
