@@ -29,6 +29,11 @@ public class VideogameController {
         return "Service is up and running";
     }
 
+    @GetMapping("/buyers")
+    public List<Client> getBuyersWithVideogames() {
+        return clients;
+    }
+
     @GetMapping("/synchronize")
     public String synchronizeAll() {
         RestTemplate restTemplate = new RestTemplate();
