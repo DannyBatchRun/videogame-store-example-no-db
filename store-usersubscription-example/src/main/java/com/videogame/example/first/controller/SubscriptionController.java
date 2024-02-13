@@ -12,8 +12,6 @@ import com.videogame.example.first.model.Client;
 
 import java.util.*;
 
-import javax.servlet.http.HttpServletRequest;
-
 @RestController
 public class SubscriptionController {
 	
