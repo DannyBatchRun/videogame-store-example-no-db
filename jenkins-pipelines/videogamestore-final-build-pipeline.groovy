@@ -16,7 +16,7 @@ pipeline {
         stage('Maven Stage') {
             steps {
                 script {
-                    dir("videogame-store-example-no-db/store-videogamestore-final") {
+                    dir("videogame-store-example-no-db/store-videogamestore-final-example") {
                         sh("mvn -v")
                         sh("mvn clean install")
                     }
@@ -26,7 +26,7 @@ pipeline {
         stage('Docker Stage') {
             steps {
                 script {
-                    dir("videogame-store-example-no-db/store-videogamestore-final") {
+                    dir("videogame-store-example-no-db/store-videogamestore-final-example") {
                         sh("docker version")
                         sh("docker build -t ${IMAGE_NAME} .")
                         sh("docker tag ${IMAGE_NAME} ${USERNAME_DOCKERHUB}/${IMAGE_NAME}:${IMAGE_TAG}")

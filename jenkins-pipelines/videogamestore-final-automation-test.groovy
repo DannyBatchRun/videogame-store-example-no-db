@@ -17,15 +17,15 @@ pipeline {
             steps {
                 script {
                     sh("npm version")
-                    dir("videogame-store-example-no-db/store-videogamestore-final/cucumber/synchronize") {
+                    dir("videogame-store-example-no-db/store-videogamestore-final-example/cucumber/synchronize") {
                         sh("npm install --save @cucumber/cucumber axios pactum")
                         echo "Dependencies installed for Synchronize"
                     }
-                    dir("videogame-store-example-no-db/store-videogamestore-final/cucumber/postrequest") {
+                    dir("videogame-store-example-no-db/store-videogamestore-final-example/cucumber/postrequest") {
                         sh("npm install --save @cucumber/cucumber axios pactum")
                         echo "Dependencies installed for PostRequest"
                     }
-                    dir("videogame-store-example-no-db/store-videogamestore-final/cucumber/getrequest") {
+                    dir("videogame-store-example-no-db/store-videogamestore-final-example/cucumber/getrequest") {
                         sh("npm install --save @cucumber/cucumber axios pactum")
                         echo "Dependencies installed for GetRequest"
                     }
@@ -36,7 +36,7 @@ pipeline {
         stage('Synchronize Databases Test') {
             steps {
                 script {
-                    dir("videogame-store-example-no-db/store-videogamestore-final/cucumber/synchronize") {
+                    dir("videogame-store-example-no-db/store-videogamestore-final-example/cucumber/synchronize") {
                         sh("npm test")
                     }
                 }
@@ -47,7 +47,7 @@ pipeline {
         stage('Videogame to Customer Cart Test') {
             steps {
                 script {
-                    dir("videogame-store-example-no-db/store-videogamestore-final/cucumber/postrequest") {
+                    dir("videogame-store-example-no-db/store-videogamestore-final-example/cucumber/postrequest") {
                         sh("sed -i 's/INSERT_VIDEOGAME_HERE/'\"${VIDEOGAME_TEST}\"'/g' features/add_videogame_cart_customer.feature")
                         sh("sed -i 's/INSERT_NAME_HERE/'\"${NAME_CLIENT_TEST}\"'/g' features/add_videogame_cart_customer.feature")
                         sh("sed -i 's/INSERT_SURNAME_HERE/'\"${SURNAME_CLIENT_TEST}\"'/g' features/add_videogame_cart_customer.feature")
@@ -60,7 +60,7 @@ pipeline {
         stage('Test All Carts') {
             steps {
                 script {
-                    dir("videogame-store-example-no-db/store-videogamestore-final/cucumber/getrequest") {
+                    dir("videogame-store-example-no-db/store-videogamestore-final-example/cucumber/getrequest") {
                         sh("npm test")
                     }
                 }
