@@ -13,6 +13,11 @@ Given('I set POST service api endpoint', function () {
 
 When('set request BODY with following details:', function (dataTable) {
   requestBody = dataTable.rowsHash();
+  requestBody = {
+    "videogameName": requestBody.videogameName,
+    "clientName": requestBody.clientName,
+    "clientSurname": requestBody.clientSurname
+  };
 });
 
 Then('send a POST HTTP request', async function () {
