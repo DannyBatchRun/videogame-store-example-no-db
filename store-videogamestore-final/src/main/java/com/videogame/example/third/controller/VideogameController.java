@@ -29,8 +29,13 @@ public class VideogameController {
         return "Service is up and running";
     }
 
+    @GetMapping("/videogames")
+    public List<Videogame> getVideogamesSynched() {
+        return videogames;
+    }
+
     @GetMapping("/buyers")
-    public List<Client> getBuyersWithVideogames() {
+    public List<Client> getBuyersWithItsCart() {
         return clients;
     }
 
@@ -38,17 +43,39 @@ public class VideogameController {
     public String synchronizeAll() {
         RestTemplate restTemplate = new RestTemplate();
         Videogame[] videogameArray = restTemplate.getForObject("http://videogameproducts:8100/videogames", Videogame[].class);
-        if (videogameArray != null) {
-            List<Videogame> videogameList = Arrays.asList(videogameArray);
-            videogames.addAll(videogameList);
-        }
         Client[] clientArray = restTemplate.getForObject("http://usersubscription2:8081/registered", Client[].class);
+        if (videogameArray != null) {
+            for (Videogame newVideogame : videogameArray) {
+                boolean exists = false;
+                for (Videogame existingVideogame : videogames) {
+                    if (existingVideogame.getIdProduct() == newVideogame.getIdProduct()) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    videogames.add(newVideogame);
+                }
+            }
+        }   
         if (clientArray != null) {
-            List<Client> clientList = Arrays.asList(clientArray);
-            clients.addAll(clientList);
+            for (Client newClient : clientArray) {
+                boolean exists = false;
+                for (Client existingClient : clients) {
+                    if (existingClient.getName().equals(newClient.getName()) && existingClient.getSurname().equals(newClient.getSurname())) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    clients.add(newClient);
+                }
+            }
         }
         return "Data synchronized successfully!";
     }
+    
+    
 
     @PostMapping("/add/cart")
     public Map<String, Client> addVideogameToCart(@Validated @RequestBody Map<String, String> requestBody) {
