@@ -1,4 +1,4 @@
-package com.jenkins.libraries.service
+package com.libraries.jenkins.service
 
 static class VideogameService {
 
