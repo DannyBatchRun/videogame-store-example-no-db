@@ -1,26 +1,31 @@
 class VideogameService {
-    static void call(script) {
+    def script
+
+    static VideogameService call(script) {
+        def instance = new VideogameService()
+        instance.script = script
         script.echo "Hello from VideogameService!"
+        return instance
     }
 
-    static void createJarFile(script, String PATH) {
+    void createJarFile(String PATH) {
         script.dir("videogame-store-example-no-db/${PATH}") {
             script.sh("mvn -v")
             script.sh("mvn clean install")
         }
     }
 
-    static void buildAndPushOnDocker(script, String PATH, String IMAGE_NAME, String IMAGE_TAG, String passwordEncrypted) {
+    void buildAndPushOnDocker(String PATH, String IMAGE_NAME, String IMAGE_TAG, String passwordEncrypted) {
         script.dir("videogame-store-example-no-db/${PATH}") {
             script.sh("docker buildx build . -t ${IMAGE_NAME}")
             script.sh("docker tag ${IMAGE_NAME} ${script.params.USERNAME_DOCKERHUB}/${IMAGE_NAME}:${IMAGE_TAG}")
-            useAnsibleVault(script, "${passwordEncrypted}", "decrypt")
+            useAnsibleVault("${passwordEncrypted}", "decrypt")
             script.sh("docker push ${script.params.USERNAME_DOCKERHUB}/${IMAGE_NAME}:${IMAGE_TAG}")
-            useAnsibleVault(script, "${passwordEncrypted}", "encrypt")
+            useAnsibleVault("${passwordEncrypted}", "encrypt")
         }
     }
 
-    static void useAnsibleVault(script, String passwordEncrypted, String choice) {
+    void useAnsibleVault(String passwordEncrypted, String choice) {
         script.dir("/home/daniele/.docker") {
             script.sh("( set +x; echo ${passwordEncrypted} > passwordFile )")
             script.sh("ansible-vault ${choice} config.json --vault-password-file passwordFile && rm passwordFile")
