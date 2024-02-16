@@ -1,5 +1,7 @@
+import jenkins.model.Jenkins
+
 static void call() {
-    println "Hello from VideogameService!"
+    println "VideogameService initialized"
     return this;
 }
 
