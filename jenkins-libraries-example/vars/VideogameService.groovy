@@ -1,6 +1,5 @@
 def call() {
     println "Hello from VideogameService!"
-    return this;
 }
 
 def createJarFile(def PATH) {
