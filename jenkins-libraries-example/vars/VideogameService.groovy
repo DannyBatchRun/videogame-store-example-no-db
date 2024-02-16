@@ -1,5 +1,5 @@
 def call() {
-    println "Hello from VideogameService!"
+    println "VideogameService initialized"
     return this;
 }
 
