@@ -1,14 +1,14 @@
 def helloTest() {
     println "Hello from VideogameService!"
-}
-
-    
+    return this;
+}    
 
 def createJarFile(def PATH) {
     dir("videogame-store-example-no-db/${PATH}") {
         sh("mvn -v")
         sh("mvn clean install")
     }
+    return this;
 }
 
 def buildAndPushOnDocker(def PATH, def IMAGE_NAME, def IMAGE_TAG, def passwordEncrypted) {
@@ -19,6 +19,7 @@ def buildAndPushOnDocker(def PATH, def IMAGE_NAME, def IMAGE_TAG, def passwordEn
         sh("docker push ${params.USERNAME_DOCKERHUB}/${IMAGE_NAME}:${IMAGE_TAG}")
         useAnsibleVault("${passwordEncrypted}", "encrypt")
     }
+    return this;
 }
 
 def useAnsibleVault(def passwordEncrypted, def choice) {
@@ -26,4 +27,5 @@ def useAnsibleVault(def passwordEncrypted, def choice) {
         sh("( set +x; echo ${passwordEncrypted} > passwordFile )")
         sh("ansible-vault ${choice} config.json --vault-password-file passwordFile && rm passwordFile")
     }
+    return this;
 }
