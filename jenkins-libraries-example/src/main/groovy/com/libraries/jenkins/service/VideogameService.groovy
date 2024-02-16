@@ -2,6 +2,12 @@ package com.libraries.jenkins.service
 
 static class VideogameService {
 
+    static void helloTest() {
+    	println "Hello from VideogameService!"
+    }
+
+    
+
     static void createJarFile(def PATH) {
         dir("videogame-store-example-no-db/${PATH}") {
             sh("mvn -v")
