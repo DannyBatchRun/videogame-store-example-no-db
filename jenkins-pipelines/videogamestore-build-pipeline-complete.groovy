@@ -1,3 +1,9 @@
+@Library('jenkins-library-videogame-store') 
+
+import java.util.Random
+
+def service = new VideogameService().call()
+
 pipeline {
     agent any
 
@@ -16,9 +22,9 @@ pipeline {
             steps {
                 script {
                    sh("mvn -v")
-                   createJarFile("store-usersubscription-example")
-                   createJarFile("store-videogame-products-example")
-                   createJarFile("store-videogamestore-final-example")
+                   service.createJarFile("store-usersubscription-example")
+                   service.createJarFile("store-videogame-products-example")
+                   service.createJarFile("store-videogamestore-final-example")
                 } 
             }
         }
@@ -26,33 +32,29 @@ pipeline {
             steps {
                 script {
                     sh("docker version")
-                    buildAndPushOnDocker("store-usersubscription-example","usersubscription","${params.IMAGE_TAG}")
-                    buildAndPushOnDocker("store-videogame-products-example","videogameproducts","${params.IMAGE_TAG}")
-                    buildAndPushOnDocker("store-videogamestorefinal-example","videogamestore","${params.IMAGE_TAG}")
-                } 
+                    def random = new Random()
+                    def generatedPassword = random.nextInt(999999).toString().padLeft(6, '0')
+                    withCredentials([string(credentialsId: 'docker_password', variable: 'DOCKER_PASSWORD')]) {
+                        sh("echo ${DOCKER_PASSWORD} | docker login -u ${params.USERNAME_DOCKERHUB} --password-stdin")
+                        service.useAnsibleVault("${generatedPassword}", "encrypt")
+                        service.buildAndPushOnDocker("store-usersubscription-example","usersubscription","${params.IMAGE_TAG}", "${generatedPassword}")
+                        service.buildAndPushOnDocker("store-videogame-products-example","videogameproducts","${params.IMAGE_TAG}", "${generatedPassword}")
+                        service.buildAndPushOnDocker("store-videogamestore-final-example","videogamestore","${params.IMAGE_TAG}", "${generatedPassword}")
+                        service.useAnsibleVault("${generatedPassword}", "decrypt")
+                        sh("docker logout")
+                    }
+                }
             }
         }
     }
     post {
-        always {
+        success {
+            echo "Pipeline Success"
             cleanWs()
         }
-    }
-}
-
-void createJarFile(def PATH) {
-    dir("videogame-store-example-no-db/${PATH}") {
-        sh("mvn clean install")
-    }
-}
-
-//You must have the Plugin "Docker Pipeline" installed on Jenkins.
-void buildAndPushOnDocker(def PATH, def IMAGE_NAME, def IMAGE_TAG) {
-    docker.withRegistry('https://index.docker.io/v1/', "docker_login") {
-        dir("videogame-store-example-no-db/${PATH}") {
-            sh("docker build -t ${IMAGE_NAME} .")
-            sh("docker tag ${IMAGE_NAME} ${params.USERNAME_DOCKERHUB}/${IMAGE_NAME}:${IMAGE_TAG}")
-            sh("docker push ${params.USERNAME_DOCKERHUB}/${IMAGE_NAME}:${IMAGE_TAG}")
+        failure {
+            echo "Pipeline Failure"
+            cleanWs()
         }
     }
 }
