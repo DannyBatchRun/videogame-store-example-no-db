@@ -11,7 +11,7 @@ pipeline {
         string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Inserisci il versionamento per ogni microservizio. Esempio : 1.0.0')
     }
     stages {
-        stage('Clone Repository') {
+        stage('Checkout Branch') {
             steps {
                 script {
                     sh("git checkout ${params.BRANCH_NAME}")
