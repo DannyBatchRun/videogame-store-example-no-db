@@ -4,14 +4,14 @@ def call() {
 }
 
 def createJarFile(def PATH) {
-    dir("videogame-store-example-no-db/${PATH}") {
+    dir("${PATH}") {
         sh("mvn -v")
         sh("mvn clean install")
     }
 }
 
 def buildAndPushOnDocker(def PATH, def IMAGE_NAME, def IMAGE_TAG, def passwordEncrypted) {
-    dir("videogame-store-example-no-db/${PATH}") {
+    dir("${PATH}") {
         sh("docker buildx build . -t ${IMAGE_NAME}")
         sh("docker tag ${IMAGE_NAME} ${USERNAME_DOCKERHUB}/${IMAGE_NAME}:${IMAGE_TAG}")
         useAnsibleVault("${passwordEncrypted}", "decrypt")

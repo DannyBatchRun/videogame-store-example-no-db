@@ -14,10 +14,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 script {
-                    sh("git clone https://github.com/DannyBatchRun/videogame-store-example-no-db.git")
-                    dir("videogame-store-example-no-db") {
-                        sh("git checkout ${params.BRANCH_NAME}")
-                    }
+                    sh("git checkout ${params.BRANCH_NAME}")
                 } 
             }
         }
