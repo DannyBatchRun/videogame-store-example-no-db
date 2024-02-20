@@ -13,9 +13,9 @@ def createJarFile(def PATH) {
 def buildAndPushOnDocker(def PATH, def IMAGE_NAME, def IMAGE_TAG, def passwordEncrypted) {
     dir("videogame-store-example-no-db/${PATH}") {
         sh("docker buildx build . -t ${IMAGE_NAME}")
-        sh("docker tag ${IMAGE_NAME} ${params.USERNAME_DOCKERHUB}/${IMAGE_NAME}:${IMAGE_TAG}")
+        sh("docker tag ${IMAGE_NAME} ${USERNAME_DOCKERHUB}/${IMAGE_NAME}:${IMAGE_TAG}")
         useAnsibleVault("${passwordEncrypted}", "decrypt")
-        sh("docker push ${params.USERNAME_DOCKERHUB}/${IMAGE_NAME}:${IMAGE_TAG}")
+        sh("docker push ${USERNAME_DOCKERHUB}/${IMAGE_NAME}:${IMAGE_TAG}")
         useAnsibleVault("${passwordEncrypted}", "encrypt")
     }
 }
