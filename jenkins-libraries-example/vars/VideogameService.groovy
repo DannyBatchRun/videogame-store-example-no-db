@@ -11,6 +11,7 @@ def createJarFile(def PATH) {
 }
 
 def buildAndPushOnDocker(def PATH, def IMAGE_NAME, def IMAGE_TAG, def passwordEncrypted) {
+    def USERNAME_DOCKERHUB = "dannybatchrun"
     dir("${PATH}") {
         sh("docker buildx build . -t ${IMAGE_NAME}")
         sh("docker tag ${IMAGE_NAME} ${USERNAME_DOCKERHUB}/${IMAGE_NAME}:${IMAGE_TAG}")
