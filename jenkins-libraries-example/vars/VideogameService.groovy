@@ -3,8 +3,6 @@ def call() {
     return this;
 }
 
-def static USERNAME_DOCKERHUB = "dannybatchrun"
-
 def createJarFile(def PATH) {
     dir("videogame-store-example-no-db/${PATH}") {
         sh("mvn -v")
