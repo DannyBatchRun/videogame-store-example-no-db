@@ -6,7 +6,10 @@ def service = new VideogameService().call()
 
 pipeline {
     agent any
-
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'master', description: 'Inserisci il branch per tutte le immagini di Videogame Store')
+        string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Inserisci il versionamento per ogni microservizio. Esempio : 1.0.0')
+    }
     stages {
         stage('Clone Repository') {
             steps {
@@ -32,10 +35,11 @@ pipeline {
             steps {
                 script {
                     sh("docker version")
+                    def USERNAME_DOCKERHUB = service.USERNAME_DOCKERHUB
                     def random = new Random()
                     def generatedPassword = random.nextInt(999999).toString().padLeft(6, '0')
                     withCredentials([string(credentialsId: 'docker_password', variable: 'DOCKER_PASSWORD')]) {
-                        sh("echo ${DOCKER_PASSWORD} | docker login -u ${params.USERNAME_DOCKERHUB} --password-stdin")
+                        sh("echo ${DOCKER_PASSWORD} | docker login -u ${USERNAME_DOCKERHUB} --password-stdin")
                         service.useAnsibleVault("${generatedPassword}", "encrypt")
                         service.buildAndPushOnDocker("store-usersubscription-example","usersubscription","${params.IMAGE_TAG}", "${generatedPassword}")
                         service.buildAndPushOnDocker("store-videogame-products-example","videogameproducts","${params.IMAGE_TAG}", "${generatedPassword}")
