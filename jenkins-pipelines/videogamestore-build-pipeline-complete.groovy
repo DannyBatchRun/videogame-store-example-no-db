@@ -9,6 +9,7 @@ pipeline {
     parameters {
         string(name: 'BRANCH_NAME', defaultValue: 'master', description: 'Inserisci il branch per tutte le immagini di Videogame Store')
         string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Inserisci il versionamento per ogni microservizio. Esempio : 1.0.0')
+        booleanParam(name: 'TRIGGER_DEPLOY', description: "ATTENZIONE! Seleziona questa casella solo se intendi procedere con il deploy subito dopo la build.")
     }
     stages {
         stage('Checkout Branch') {
@@ -45,6 +46,22 @@ pipeline {
                         sh("docker logout")
                     }
                 }
+            }
+        }
+        stage('Trigger Deploy Pipeline') {
+            when {
+                expression {
+                    return params.TRIGGER_DEPLOY
+                }
+            }
+            steps {
+                script {
+                    build(job: 'videogame-store-deploy-complete', parameters: [
+                        choice(name: 'IMAGE_NAME', choices: ['usersubscription', 'videogameproducts', 'videogamestore'], value: 'usersubscription'),
+                        string(name: 'IMAGE_VERSION', value: "${params.IMAGE_TAG}"),
+                        booleanParam(name: 'DEPLOY_ALL', value: true)
+                    ], wait: false)
+                } 
             }
         }
     }
