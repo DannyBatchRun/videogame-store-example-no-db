@@ -56,10 +56,10 @@ pipeline {
             }
             steps {
                 script {
-                    build(job: 'videogame-store-deploy-complete', parameters: [
-                        choice(name: 'IMAGE_NAME', choices: ['usersubscription', 'videogameproducts', 'videogamestore'], value: 'usersubscription'),
-                        string(name: 'IMAGE_VERSION', value: "${params.IMAGE_TAG}"),
-                        booleanParam(name: 'DEPLOY_ALL', value: true)
+                    build(job: "videogame-store-deploy-complete", parameters: [
+                        string(name: "IMAGE_NAME", value: "usersubscription"),
+                        string(name: "IMAGE_VERSION", value: "${params.IMAGE_TAG}"),
+                        booleanParam(name: "DEPLOY_ALL", value: true)
                     ], wait: false)
                 } 
             }
