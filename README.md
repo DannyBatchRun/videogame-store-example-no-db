@@ -4,7 +4,8 @@ Spring API Rest Project Example of a a Generic Videogame Store with no Database 
 <strong>UserSubscription</strong> ---> Add an existing client on a Monthly or Annual Subscription.<br />
 <strong>VideoGameProducts</strong> ---> Add Videogames or Remove Existing Products<br />
 <br />
-You can import this project on your IDE and then test it. Is not required any MySQL Database or similar.<br />
+You can import this project on your IDE and then test it.<br />
+Is not required any MySQL Database or similar.<br />
 Enjoy!
 
 # Update 02/08/2024
