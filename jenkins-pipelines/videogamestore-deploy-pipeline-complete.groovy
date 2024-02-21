@@ -12,13 +12,6 @@ pipeline {
             steps {
                 script {
                     SERVICE_PORT = params.DEPLOY_ALL ? false : getServicePort("${params.IMAGE_NAME}")
-                    if(!params.DEPLOY_ALL) {
-                        checkTagExists("${params.IMAGE_NAME}","${params.IMAGE_VERSION}")
-                    } else if (params.DEPLOY_ALL) {
-                        checkTagExists("usersubscription","${params.IMAGE_VERSION}")
-                        checkTagExists("videogameproducts","${params.IMAGE_VERSION}")
-                        checkTagExists("videogamestore","${params.IMAGE_VERSION}")
-                    }
                     //To be removed after merge
                     sh("git checkout helmIntegration")
                 }
@@ -76,19 +69,6 @@ def getServicePort(def microservice) {
             servicePort = "80"
     }
     return servicePort
-}
-
-def checkTagExists(String repository, String tag) {
-    withCredentials([string(credentialsId: 'docker_password', variable: 'DOCKER_PASSWORD')]) {
-        def token = sh(script: "set +x; curl -s -u dannybatchrun:\${DOCKER_PASSWORD} 'https://auth.docker.io/token?service=registry.docker.io&scope=repository:${repository}:pull'", returnStdout: true).trim()
-        def command = "curl -s -H 'Authorization: Bearer \${token}' https://registry.hub.docker.com/v2/${repository}/tags/list"
-        def result = sh(script: "set +x; ${command}", returnStdout: true).trim()
-        if (result.contains("\"${tag}\"")) {
-            println("IMAGE_VERSION ${tag} found for repository ${repository}")
-        } else {
-            error("IMAGE_VERSION ${tag} not found for repository ${repository}")
-        }
-    }
 }
 
 def pullDockerImage(def deployAll, def imageName, def imageVersion) {
