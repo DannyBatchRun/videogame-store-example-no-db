@@ -74,12 +74,16 @@ def getServicePort(def microservice) {
 }
 
 def checkTagExists(String repository, String tag) {
-    def command = "curl -s https://registry.hub.docker.com/v2/repositories/dannybatchrun/${repository}/tags/${tag}"
-    def result = sh(script: command, returnStdout: true).trim()
-    if (result ==~ /.*"name": "${tag}".*/) {
-        println("IMAGE_VERSION ${tag} found for repository ${repository}")
-    } else {
-        error("IMAGE_VERSION ${tag} not found for repository ${repository}")
+    withCredentials([string(credentialsId: 'docker_password', variable: 'DOCKER_PASSWORD')]) {
+        def command = "curl -s -u dannybatchrun:${DOCKER_PASSWORD} https://registry.hub.docker.com/v2/repositories/${repository}/tags/${tag}"
+        def process = command.execute()
+        process.waitFor()
+        def result = process.text.trim()
+        if (result ==~ /.*"name": "${tag}".*/) {
+            println("IMAGE_VERSION ${tag} found for repository ${repository}")
+        } else {
+            error("IMAGE_VERSION ${tag} not found for repository ${repository}")
+        }
     }
 }
 
