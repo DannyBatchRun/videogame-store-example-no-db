@@ -5,7 +5,7 @@ pipeline {
     parameters {
         choice(name: 'IMAGE_NAME', choices: ['usersubscription', 'videogameproducts', 'videogamestore'], defaultValue: 'videogamestore', description: 'Scegli il microservizio richiesto per il deploy')
         string(name: 'IMAGE_VERSION', defaultValue: 'latest', description: 'Inserisci il versionamento per ogni microservizio. Esempio : 1.0.0')
-	booleanParam(defaultValue: false, description: 'ATTENZIONE! Seleziona questa casella solo se intendi effettuare il deploy di tutti i microservizi.\\nAssicurati che il versionamento è esistente per ogni microservizio.', name: 'DEPLOY_ALL')
+	booleanParam(name: 'DEPLOY_ALL', description: 'ATTENZIONE! Seleziona questa casella solo se intendi effettuare il deploy di tutti i microservizi.\\nAssicurati che il versionamento è esistente per ogni microservizio.')
     }
     stages {
         stage('Setup Parameters') {
