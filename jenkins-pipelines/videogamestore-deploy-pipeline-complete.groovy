@@ -13,7 +13,13 @@ pipeline {
             steps {
                 script {
                     SERVICE_PORT = params.DEPLOY_ALL ? false : getServicePort("${params.IMAGE_NAME}")
-                    checkTagExists("${params.IMAGE_NAME}","${params.IMAGE_VERSION}")
+                    if(!${params.DEPLOY_ALL}) {
+                        checkTagExists("${params.IMAGE_NAME}","${params.IMAGE_VERSION}")
+                    } else if (${params.DEPLOY_ALL}) {
+                        checkTagExists("usersubscription","${params.IMAGE_VERSION}")
+                        checkTagExists("videogameproducts","${params.IMAGE_VERSION}")
+                        checkTagExists("videogamestore","${params.IMAGE_VERSION}")
+                    }
                     //To be removed after merge
                     sh("git checkout helmIntegration")
                 }
@@ -75,15 +81,20 @@ def getServicePort(def microservice) {
 
 def checkTagExists(String repository, String tag) {
     withCredentials([string(credentialsId: 'docker_password', variable: 'DOCKER_PASSWORD')]) {
-        def command = "curl -s -u dannybatchrun:\${DOCKER_PASSWORD} https://registry.hub.docker.com/v2/repositories/${repository}/tags/${tag}"
+        sh("echo ${DOCKER_PASSWORD} | docker login -u ${USERNAME_DOCKERHUB} --password-stdin")
+        def command = "curl -s https://registry.hub.docker.com/v2/dannybatchrun/${repository}/tags/list"
+        println("Running command: ${command}")
         def result = sh(script: command, returnStdout: true).trim()
-        if (result ==~ /.*"name": "${tag}".*/) {
+        println("Command output: ${result}")
+        if (result.contains("\"${tag}\"")) {
             println("IMAGE_VERSION ${tag} found for repository ${repository}")
         } else {
             error("IMAGE_VERSION ${tag} not found for repository ${repository}")
         }
+        sh("docker logout")
     }
 }
+
 
 
 def pullDockerImage(def deployAll, def imageName, def imageVersion) {
