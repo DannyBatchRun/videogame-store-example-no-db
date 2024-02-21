@@ -16,8 +16,6 @@ pipeline {
             steps {
                 script {
                     SERVICE_PORT = params.DEPLOY_ALL ? false : deployService.getServicePort("${params.IMAGE_NAME}")
-                    //To be removed after merge
-                    sh("git checkout helmIntegration")
                 }
             }
         }
