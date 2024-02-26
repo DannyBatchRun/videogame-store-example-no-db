@@ -10,13 +10,13 @@ Feature: Post Request Feature
 
 Examples:
 | videogameName | clientName | clientSurname |
-| "Zelda" | "Sofia" | "Ricci" |
-| "Zelda" | "Maria" | "Bianchi" |
-| "Minecraft" | "Luca" | "Verdi" |
-| "Fortnite" | "Giovanni" | "Rossi" |
-| "Cyberpunk" | "Giovanni" | "Rossi" |
-| "Rocket League" | "Pietro" | "Neri" |
-| "Fall Guys" | "Pietro" | "Neri" |
-| "Overwatch" | "Michela" | "Lete" |
-| "Among Us" | "Francesco" | "Sorrentino" |
-| "FIFA 2024" | "Luigi" | "Esposito" |
+| Zelda | Sofia | Ricci |
+| Zelda | Maria | Bianchi |
+| Minecraft | Luca | Verdi |
+| Fortnite | Giovanni | Rossi |
+| Cyberpunk | Giovanni | Rossi |
+| Rocket League | Pietro | Neri |
+| Fall Guys | Pietro | Neri |
+| Overwatch | Michela | Lete |
+| Among Us | Francesco | Sorrentino |
+| FIFA 2024 | Luigi | Esposito |
