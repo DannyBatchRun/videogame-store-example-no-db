@@ -43,7 +43,7 @@ public class VideogameController {
     public String synchronizeAll() {
         RestTemplate restTemplate = new RestTemplate();
         Videogame[] videogameArray = restTemplate.getForObject("http://videogameproducts:8100/videogames", Videogame[].class);
-        Client[] clientArray = restTemplate.getForObject("http://usersubscription2:8081/registered", Client[].class);
+        Client[] clientArray = restTemplate.getForObject("http://usersubscription:8081/registered", Client[].class);
         if (videogameArray != null) {
             for (Videogame newVideogame : videogameArray) {
                 boolean exists = false;
