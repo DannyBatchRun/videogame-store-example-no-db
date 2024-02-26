@@ -10,7 +10,7 @@ Feature: Post Request Feature
 
 Examples:
 | videogameName | clientName | clientSurname |
-| "Super Mario" | "Sofia" | "Ricci" |
+| "Zelda" | "Sofia" | "Ricci" |
 | "Zelda" | "Maria" | "Bianchi" |
 | "Minecraft" | "Luca" | "Verdi" |
 | "Fortnite" | "Giovanni" | "Rossi" |
