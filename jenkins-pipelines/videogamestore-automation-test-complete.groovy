@@ -24,10 +24,10 @@ pipeline {
             steps {
                 script {
                     installDependenciesNodeJs("usersubscription")
-                    echo "** ADDING FIVE USER SUBSCRIPTION MONHLY ** SLEEP FOR 2 MINUTES"
+                    echo "** ADDING FOUR USERS FOR A SUBSCRIPTION MONHLY ** SLEEP FOR 2 MINUTES"
                     sleep 120
                     runTestCucumber("usersubscription", "postrequestmonthly")
-                    echo "** ADDING FIVE USER SUBSCRIPTION ANNUAL ** SLEEP FOR 2 MINUTES"
+                    echo "** ADDING FOUR USERS FOR A SUBSCRIPTION ANNUAL ** SLEEP FOR 2 MINUTES"
                     sleep 120
                     runTestCucumber("usersubscription", "postrequestannual")
                     runTestCucumber("usersubscription", "getrequest")
@@ -80,46 +80,23 @@ def installDependenciesNodeJs(def microservice) {
     sh("npm version")
     switch("${microservice}") {
         case "usersubscription":
-            dir("store-usersubscription-example/cucumber/postrequest") {
-                sh("npm install --save @cucumber/cucumber axios pactum")
-                echo "Dependencies installed for PostRequest - UserSubscription"
-            }
-            dir("store-usersubscription-example/cucumber/getrequest") {
-                sh("npm install --save @cucumber/cucumber axios pactum")
-                echo "Dependencies installed for GetRequest"
-            }
+            installIntoDirectory("store-usersubscription-example","postrequestmonthly")
+            installIntoDirectory("store-usersubscription-example","postrequestannual")
+            installIntoDirectory("store-usersubscription-example","getrequest")
         break
         case "videogameproducts":
-            dir("store-videogame-products-example/cucumber/postrequest") {
-                sh("npm install --save @cucumber/cucumber axios pactum")
-                echo "Dependencies installed for PostRequest"
-            }
-            dir("store-videogame-products-example/cucumber/getrequest") {
-                sh("npm install --save @cucumber/cucumber axios pactum")
-                echo "Dependencies installed for GetRequest"
-            }
-            dir("store-videogame-products-example/cucumber/deleterequest") {
-                sh("npm install --save @cucumber/cucumber axios pactum")
-                echo "Dependencies installed for DeleteRequest"
-                sh("npm test")
-            }
+            installIntoDirectory("store-videogame-products-example","postrequest")
+            installIntoDirectory("store-videogame-products-example","getrequest")
+            installIntoDirectory("store-videogame-products-example","deleterequest")
         break
         case "videogamestore":
-            dir("store-videogamestore-final-example/cucumber/synchronize") {
-                sh("npm install --save @cucumber/cucumber axios pactum")
-                echo "Dependencies installed for Synchronize"
-            }
-            dir("store-videogamestore-final-example/cucumber/postrequest") {
-                sh("npm install --save @cucumber/cucumber axios pactum")
-                echo "Dependencies installed for PostRequest"
-            }
-            dir("store-videogamestore-final-example/cucumber/getrequest") {
-                sh("npm install --save @cucumber/cucumber axios pactum")
-                echo "Dependencies installed for GetRequest"
-            }
+            installIntoDirectory("store-videogamestore-final-example","synchronize")
+            installIntoDirectory("store-videogamestore-final-example","postrequest")
+            installIntoDirectory("store-videogamestore-final-example","getrequest")
         break
     }
 }
+
 
 def forwardKubernetesPort(def microservice) {
     def servicePort
@@ -137,6 +114,13 @@ def forwardKubernetesPort(def microservice) {
     def podName = sh(script: "kubectl get pods -l \"app.kubernetes.io/instance=${microservice}\" -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
     echo "Pod Name ${microservice}: ${podName}"
     sh("kubectl port-forward ${podName} ${servicePort}:${servicePort} &")
+}
+
+def installIntoDirectory(def path, def testType) {
+    dir ("${path}/cucumber-auto/${testType}") {
+        sh("npm install --save @cucumber/cucumber axios pactum")
+        echo "Dependencies installed for ${testType}"
+    }
 }
 
 def runTestCucumber(def microservice, def testType) {
