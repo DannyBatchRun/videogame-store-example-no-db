@@ -3,9 +3,22 @@ pipeline {
     parameters {
         booleanParam(name: 'USERSUBSCRIPTION_TEST', description: "Spunta questa casella se vuoi testare l'applicazione UserSubscription.")
         booleanParam(name: 'VIDEOGAMEPRODUCTS_TEST', description: "Spunta questa casella se vuoi testare l'applicazione VideogameProducts.")
-        booleanParam(name: 'VIDEOGAMESTORE_TEST', description: "Spunta questa casella se vuoi testare l'applicazione Videogamestore.")
+        booleanParam(name: 'VIDEOGAMESTORE_TEST', description: "Spunta questa casella se vuoi testare l'applicazione Videogamestore. ATTENZIONE! Se selezionato, verranno lanciati anche i test di UserSubscription e VideogameStore.")
     }
     stages {
+        stage('Check VideogameStore') {
+            when {
+                expression {
+                    return params.VIDEOGAMESTORE_TEST
+                }
+            }
+            steps {
+                script {
+                    USERSUBSCRIPTION_TEST = true
+                    VIDEOGAMEPRODUCTS_TEST = true
+                }
+            }
+        }
         stage('Local Forwarding') {
             steps {
                 script {
@@ -111,9 +124,10 @@ def forwardKubernetesPort(def microservice) {
             servicePort = "8080"
         break
     }
-    def podName = sh(script: "kubectl get pods -l \"app.kubernetes.io/instance=${microservice}\" -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
-    echo "Pod Name ${microservice}: ${podName}"
-    sh("kubectl port-forward ${podName} ${servicePort}:${servicePort} &")
+    //def podName = sh(script: "kubectl get pods -l \"app.kubernetes.io/instance=${microservice}\" -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
+    //echo "Pod Name ${microservice}: ${podName}"
+    //sh("kubectl port-forward ${podName} ${servicePort}:${servicePort} &")
+    sh("kubectl port-forward svc/${microservice} ${servicePort}:${servicePort} &")
 }
 
 def installIntoDirectory(def path, def testType) {
