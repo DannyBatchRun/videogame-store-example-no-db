@@ -9,7 +9,7 @@ pipeline {
         stage('Check VideogameStore') {
             when {
                 expression {
-                    return params.VIDEOGAMESTORE_TEST
+                    return params.VIDEOGAMESTORE_TEST && (!params.USERSUBSCRIPTION_TEST || !params.VIDEOGAMEPRODUCTS_TEST)
                 }
             }
             steps {
@@ -19,12 +19,18 @@ pipeline {
                 }
             }
         }
-        stage('Local Forwarding') {
+        stage('Minikube Check and Local Forward') {
             steps {
                 script {
+                    def minikubeStatus = sh(script: "minikube status", returnStdout: true).trim()
+                    if (minikubeStatus.contains("host: Running")) {
+                        sh("minikube stop")
+                        sh("minikube start")
+                    }
                     forwardKubernetesPort("usersubscription")
                     forwardKubernetesPort("videogameproducts")
                     forwardKubernetesPort("videogamestore")
+                    sh("npm version")
                 }
             }
         }
@@ -90,7 +96,6 @@ pipeline {
 }
 
 def installDependenciesNodeJs(def microservice) {
-    sh("npm version")
     switch("${microservice}") {
         case "usersubscription":
             installIntoDirectory("store-usersubscription-example","postrequestmonthly")
