@@ -1,5 +1,5 @@
 def call() {
-    println "VideogameServiceAutomation initialized"
+    println "VideogameAutomationService initialized"
     return this;
 }
 

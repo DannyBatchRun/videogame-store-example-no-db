@@ -1,6 +1,6 @@
 @Library('jenkins-library-videogame-store')
 
-def service = new VideogameServiceAutomation().call()
+def service = new VideogameAutomationService().call()
 
 pipeline {
     agent any
