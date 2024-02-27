@@ -14,6 +14,7 @@ Is not required any MySQL Database or similar. This is a fake database based on 
 <strong>logstash-configurations</strong> ---> Logstash is configured for each microservice, and is able to communicate with Elasticsearch.<br />
 <strong>cucumber</strong> ---> Each microservice have a folder named "cucumber", dedicated to its client based on Automation Test. Each parameter is configured exclusively for Jenkins, through the paramterized build that replace every single for test the endpoint.<br />
 <strong>cucumber-auto</strong> ---> Each microservice have a folder named "cucumber-auto", dedicated to its client based on Automation Test. Each microservice is properly configured with some parameters of example with Scenario's Outline.<br />
+<br />
 Enjoy!<br />
 
 # Update 02/08/2024
