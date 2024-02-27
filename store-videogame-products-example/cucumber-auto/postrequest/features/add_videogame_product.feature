@@ -14,7 +14,7 @@ Feature: Video Game Product API
     | 0         | Super Mario   | Platform  | 59.99 |
     | 1         | Zelda         | Adventure | 59.99 |
     | 2         | Minecraft     | Sandbox   | 29.99 |
-    | 3         | Fortnite      | Shooter   | 0.00  |
+    | 3         | Fortnite      | Shooter   | 1.00  |
     | 4         | Among Us      | Strategy  | 4.99  |
     | 5         | FIFA 2024     | Sports    | 59.99 |
     | 6         | Cyberpunk     | RPG       | 59.99 |
