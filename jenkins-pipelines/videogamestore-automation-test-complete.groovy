@@ -1,3 +1,7 @@
+@Library('jenkins-library-videogame-store')
+
+def service = new VideogameServiceAutomation().call()
+
 pipeline {
     agent any
     parameters {
@@ -6,30 +10,18 @@ pipeline {
         booleanParam(name: 'VIDEOGAMESTORE_TEST', description: "Spunta questa casella se vuoi testare l'applicazione Videogamestore. ATTENZIONE! Se selezionato, verranno lanciati anche i test di UserSubscription e VideogameStore.")
     }
     stages {
-        stage('Check VideogameStore') {
-            when {
-                expression {
-                    return params.VIDEOGAMESTORE_TEST && (!params.USERSUBSCRIPTION_TEST || !params.VIDEOGAMEPRODUCTS_TEST)
-                }
-            }
+        stage('Initialization') {
             steps {
                 script {
-                    USERSUBSCRIPTION_TEST = true
-                    VIDEOGAMEPRODUCTS_TEST = true
-                }
-            }
-        }
-        stage('Minikube Check and Local Forward') {
-            steps {
-                script {
-                    def minikubeStatus = sh(script: "minikube status", returnStdout: true).trim()
-                    if (minikubeStatus.contains("host: Running")) {
-                        sh("minikube stop")
-                        sh("minikube start")
+                    if (params.VIDEOGAMESTORE_TEST && (!params.USERSUBSCRIPTION_TEST || !params.VIDEOGAMEPRODUCTS_TEST)) {
+                        USERSUBSCRIPTION_TEST = true
+                        VIDEOGAMEPRODUCTS_TEST = true
                     }
-                    forwardKubernetesPort("usersubscription")
-                    forwardKubernetesPort("videogameproducts")
-                    forwardKubernetesPort("videogamestore")
+                    echo "**** FORWARDING MICROSERVICES IN PROGRESS ****"
+                    service.forwardKubernetesPort("usersubscription","open")
+                    service.forwardKubernetesPort("videogameproducts","open")
+                    service.forwardKubernetesPort("videogamestore","open")
+                    echo "**** CHECK VERSION OF NPM ****"
                     sh("npm version")
                 }
             }
@@ -42,14 +34,14 @@ pipeline {
             }
             steps {
                 script {
-                    installDependenciesNodeJs("usersubscription")
+                    service.installDependenciesNodeJs("usersubscription")
                     echo "** ADDING FOUR USERS FOR A SUBSCRIPTION MONHLY ** SLEEP FOR 2 MINUTES"
                     sleep 120
-                    runTestCucumber("usersubscription", "postrequestmonthly")
+                    service.runTestCucumber("usersubscription", "postrequestmonthly")
                     echo "** ADDING FOUR USERS FOR A SUBSCRIPTION ANNUAL ** SLEEP FOR 2 MINUTES"
                     sleep 120
-                    runTestCucumber("usersubscription", "postrequestannual")
-                    runTestCucumber("usersubscription", "getrequest")
+                    service.runTestCucumber("usersubscription", "postrequestannual")
+                    service.runTestCucumber("usersubscription", "getrequest")
                 }
             }
         }
@@ -61,12 +53,12 @@ pipeline {
             }
             steps {
                 script {
-                    installDependenciesNodeJs("videogameproducts")
-                    runTestCucumber("videogameproducts", "postrequest")
+                    service.installDependenciesNodeJs("videogameproducts")
+                    service.runTestCucumber("videogameproducts", "postrequest")
                     echo "*** PRODUCT ID TO BE DELETED : 1 *** SLEEP FOR 2 MINUTES"
                     sleep 120
-                    runTestCucumber("videogameproducts", "deleterequest")
-                    runTestCucumber("videogameproducts", "getrequest")
+                    service.runTestCucumber("videogameproducts", "deleterequest")
+                    service.runTestCucumber("videogameproducts", "getrequest")
                 }
             }
         }
@@ -78,86 +70,36 @@ pipeline {
             }
             steps {
                 script {
-                    installDependenciesNodeJs("videogamestore")
+                    service.installDependenciesNodeJs("videogamestore")
                     echo "*** SYNCRONIZING DATABASES OF USERSUBSCRIPTION AND VIDEOGAMEPRODUCTS ***"
-                    runTestCucumber("videogamestore", "synchronize")
-                    runTestCucumber("videogamestore", "postrequest")
-                    runTestCucumber("videogamestore", "getrequest")
+                    service.runTestCucumber("videogamestore", "synchronize")
+                    service.runTestCucumber("videogamestore", "postrequest")
+                    echo "*** WAITING FOR TWO MINUTES AFTER SEND GETREQUEST TEST ***"
+                    sleep 120
+                    service.runTestCucumber("videogamestore", "getrequest")
                 }
             }
         }
     }
     
     post {
-        always {
+        success {
+            script {
+                echo "Pipeline Success"
+                params.USERSUBSCRIPTION_TEST ? service.forwardKubernetesPort("usersubscription", "close") : null
+                params.VIDEOGAMEPRODUCTS_TEST ? service.forwardKubernetesPort("videogameproducts", "close") : null
+                params.VIDEOGAMESTORE_TEST ? service.forwardKubernetesPort("videogamestore", "close") : null
+            }
+            cleanWs()
+        }
+        failure {
+            script {
+                echo "Pipeline Failure"
+                params.USERSUBSCRIPTION_TEST ? service.forwardKubernetesPort("usersubscription", "close") : null
+                params.VIDEOGAMEPRODUCTS_TEST ? service.forwardKubernetesPort("videogameproducts", "close") : null
+                params.VIDEOGAMESTORE_TEST ? service.forwardKubernetesPort("videogamestore", "close") : null
+            }
             cleanWs()
         }
     }
-}
-
-def installDependenciesNodeJs(def microservice) {
-    switch("${microservice}") {
-        case "usersubscription":
-            installIntoDirectory("store-usersubscription-example","postrequestmonthly")
-            installIntoDirectory("store-usersubscription-example","postrequestannual")
-            installIntoDirectory("store-usersubscription-example","getrequest")
-        break
-        case "videogameproducts":
-            installIntoDirectory("store-videogame-products-example","postrequest")
-            installIntoDirectory("store-videogame-products-example","getrequest")
-            installIntoDirectory("store-videogame-products-example","deleterequest")
-        break
-        case "videogamestore":
-            installIntoDirectory("store-videogamestore-final-example","synchronize")
-            installIntoDirectory("store-videogamestore-final-example","postrequest")
-            installIntoDirectory("store-videogamestore-final-example","getrequest")
-        break
-    }
-}
-
-
-def forwardKubernetesPort(def microservice) {
-    def servicePort
-    switch("${microservice}") {
-        case "usersubscription":
-            servicePort = "8081"
-        break
-        case "videogameproducts":
-            servicePort = "8100"
-        break
-        case "videogamestore":
-            servicePort = "8080"
-        break
-    }
-    //def podName = sh(script: "kubectl get pods -l \"app.kubernetes.io/instance=${microservice}\" -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
-    //echo "Pod Name ${microservice}: ${podName}"
-    //sh("kubectl port-forward ${podName} ${servicePort}:${servicePort} &")
-    sh("kubectl port-forward svc/${microservice} ${servicePort}:${servicePort} &")
-}
-
-def installIntoDirectory(def path, def testType) {
-    dir ("${path}/cucumber-auto/${testType}") {
-        sh("npm install --save @cucumber/cucumber axios pactum")
-        echo "Dependencies installed for ${testType}"
-    }
-}
-
-def runTestCucumber(def microservice, def testType) {
-    def path
-    switch("${microservice}") {
-        case "usersubscription":
-            path = "store-usersubscription-example"
-        break
-        case "videogameproducts":
-            path = "store-videogame-products-example"
-        break
-        case "videogamestore":
-            path = "store-videogamestore-final-example"
-        break
-    }
-    println "*** RUNNING TEST ${microservice.toUpperCase()} : ${testType.toUpperCase()} ***"
-    dir ("${path}/cucumber-auto/${testType}") {
-        sh("npm test")
-    }
-    println "*** ${microservice.toUpperCase()} : ${testType.toUpperCase()} COMPLETED SUCCESSFULLY ***"
 }
