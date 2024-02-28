@@ -11,13 +11,16 @@ pipeline {
         stage('Check Running Packages') {
             steps {
                 script {
-                    executeCommand("minikube version")
+                    def userName = env.BUILD_USER ?: 'Automated Process'
+                    currentBuild.displayName = "Build N° ${currentBuild.number}"
+                    currentBuild.description = "Started by User ${userName}\nBranch_Name : ${params.BRANCH_NAME}\nTag Name : ${params.IMAGE_TAG}"
                     executeCommand("helm version")
                     executeCommand("java --version")
                     executeCommand("mvn -v")
                     executeCommand("npm version")
-                    def minikubeStatus = sh(script: "minikube status", returnStdout: true).trim()
-                    minikubeStatus.contains("host: Stopped") ? executeCommand("minikube start") : executeCommand('echo "Minikube already started"')
+                    def minikubeStatus = sh(script: "minikube status || true", returnStdout: true).trim()
+                    minikubeStatus.contains("host: Stopped") ? executeCommand("minikube start") : 'Minikube already started'
+                    executeCommand("minikube version")
                 }
             }
         }
@@ -29,14 +32,14 @@ pipeline {
             }
             steps {
                 script {
-                    sh("helm version")
-                    def result = sh(script: 'helm list -q | wc -l', returnStdout: true).trim()
-                    (result.toInteger() > 0) ? executeCommand("helm list -q | xargs -n 1 helm delete") : executeCommand("echo 'No Helm releases found.'")
-                    echo (result.toInteger() > 0) ? 'All Helm releases have been deleted.' : 'No Helm releases found.'
-                    executeCommand("docker images --format \"{{.Repository}}:{{.Tag}}\" | grep -E \"usersubscription|videogameproducts|videogamestore\" | xargs -r docker rmi -f")
+                    def result = sh(script: 'helm list -q | wc -l', returnStdout: true).toString().trim()
+                    result = result.toInteger()
+                    (result > 0) ? executeCommand("helm list -q | xargs -n 1 helm delete") : 'No Helm releases found.'
+                    def dockerImages = sh(script: 'docker images --format "{{.Repository}}" | grep -E "usersubscription|videogameproducts|videogamestore"', returnStdout: true).trim()
+                    (dockerImages) ? dockerImages.split("\n").each { image -> executeCommand("docker rmi -f ${image} || true") } : println('No Docker images found')
                     echo "**** Docker Images Pruned ****"
                     def deployments = sh(script: "kubectl get deployments --all-namespaces", returnStdout: true).trim()
-                    !deployments.contains("No resources found") ? executeCommand("kubectl delete deployments --all --all-namespaces") : executeCommand("echo 'No deployments found'")
+                    !deployments.contains("No resources found") ? executeCommand("kubectl delete deployments --all --all-namespaces") : 'No deployments found'
                 }
             }
         }
@@ -91,7 +94,7 @@ pipeline {
                 script {
                     def userInput = input(id: 'confirm', message: 'Proceed with deploy?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Click yes to proceed', name: 'Yes']])
                     DEPLOY_EKS = (userInput == 'Yes') ? true : false
-                    echo (DEPLOY_EKS) ? executeCommand("echo '**** You Selected Yes. Deploy will start in a minute ****'") : executeCommand("echo '**** You selected No. Deploy will abort. ****'")
+                    echo (DEPLOY_EKS) ? "**** You Selected Yes. Deploy will start in a minute ****" : "**** You selected No. Deploy will abort. ****"
                 }
             }
         }
@@ -113,7 +116,7 @@ pipeline {
         success {
             script {
                 echo "Pipeline Success"
-                params.CLEAN_ALL ? executeCommand("echo 'Cleaned All Helm Releases and Docker Images'") : executeCommand("echo 'Helm Releases and Docker Images are not cleaned.'")
+                params.CLEAN_ALL ? "Cleaned All Helm Releases and Docker Images" : "Helm Releases and Docker Images are not cleaned.")
                 sh("docker image ls | grep usersubscription")
                 sh("docker image ls | grep videogameproducts")
                 sh("docker image ls | grep videogamestore")
@@ -144,6 +147,6 @@ def executeCommand(def command) {
         sh(command)
         echo "${command} command executed successfully"
     } catch (Exception e) {
-        error("${command} command failed or is not correctly installed.")
+        error("${command} command failed.")
     }
 }
