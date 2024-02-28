@@ -116,7 +116,7 @@ pipeline {
         success {
             script {
                 echo "Pipeline Success"
-                params.CLEAN_ALL ? "Cleaned All Helm Releases and Docker Images" : "Helm Releases and Docker Images are not cleaned.")
+                params.CLEAN_ALL ? "Cleaned All Helm Releases and Docker Images" : "Helm Releases and Docker Images are not cleaned."
                 sh("docker image ls | grep usersubscription")
                 sh("docker image ls | grep videogameproducts")
                 sh("docker image ls | grep videogamestore")
