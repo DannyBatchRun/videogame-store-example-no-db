@@ -17,7 +17,7 @@ pipeline {
                     executeCommand("mvn -v")
                     executeCommand("npm version")
                     def minikubeStatus = sh(script: "minikube status", returnStdout: true).trim()
-                    minikubeStatus.contains("host: Stopped") ? executeCommand("minikube start") : echo "Minikube already started"
+                    minikubeStatus.contains("host: Stopped") ? executeCommand("minikube start") : executeCommand('echo "Minikube already started"')
                 }
             }
         }
@@ -31,9 +31,9 @@ pipeline {
                 script {
                     sh("helm version")
                     def result = sh(script: 'helm list -q | wc -l', returnStdout: true).trim()
-                    (result.toInteger() > 0) ? sh 'helm list -q | xargs -n 1 helm delete' : echo 'No Helm releases found.'
+                    (result.toInteger() > 0) ? executeCommand("helm list -q | xargs -n 1 helm delete") : executeCommand("echo 'No Helm releases found.'")
                     echo (result.toInteger() > 0) ? 'All Helm releases have been deleted.' : 'No Helm releases found.'
-                    sh("docker images --format \"{{.Repository}}:{{.Tag}}\" | grep -E \"usersubscription|videogameproducts|videogamestore\" | xargs -r docker rmi -f")
+                    executeCommand("docker images --format \"{{.Repository}}:{{.Tag}}\" | grep -E \"usersubscription|videogameproducts|videogamestore\" | xargs -r docker rmi -f")
                     echo "**** Docker Images Pruned ****"
                     def deployments = sh(script: "kubectl get deployments --all-namespaces", returnStdout: true).trim()
                     !deployments.contains("No resources found") ? sh "kubectl delete deployments --all --all-namespaces" : echo "No deployments found"
@@ -91,7 +91,7 @@ pipeline {
                 script {
                     def userInput = input(id: 'confirm', message: 'Proceed with deploy?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Click yes to proceed', name: 'Yes']])
                     DEPLOY_EKS = (userInput == 'Yes') ? true : false
-                    echo (DEPLOY_EKS) ? "**** You Selected Yes. Deploy will start in a minute ****" : '**** You selected No. Deploy will abort. ****'
+                    echo (DEPLOY_EKS) ? executeCommand("echo '**** You Selected Yes. Deploy will start in a minute ****'") : executeCommand("echo '**** You selected No. Deploy will abort. ****'")
                 }
             }
         }
@@ -113,7 +113,7 @@ pipeline {
         success {
             script {
                 echo "Pipeline Success"
-                params.CLEAN_ALL ? echo "Cleaned All Helm Releases and Docker Images" : echo "Helm Releases and Docker Images are not cleaned."
+                params.CLEAN_ALL ? executeCommand("echo 'Cleaned All Helm Releases and Docker Images'") : executeCommand("echo 'Helm Releases and Docker Images are not cleaned.'")
                 sh("docker image ls | grep usersubscription")
                 sh("docker image ls | grep videogameproducts")
                 sh("docker image ls | grep videogamestore")
