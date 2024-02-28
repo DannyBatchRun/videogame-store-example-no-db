@@ -133,8 +133,8 @@ pipeline {
 def createHelmManifest(def microservice) {
     dir("helm-integration/${microservice}") {
         sh("helm package .")
-        def package = sh(script: 'ls *.tgz', returnStdout: true).trim()
-        sh("helm install ${microservice} ./${package} --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=1.0.0")
+        def pkg = sh(script: 'ls *.tgz', returnStdout: true).trim()
+        sh("helm install ${microservice} ./${pkg} --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=1.0.0")
         sh("helm get manifest ${microservice}")
     }
 }
