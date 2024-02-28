@@ -11,13 +11,13 @@ pipeline {
         stage('Check Running Packages') {
             steps {
                 script {
-                    checkPackageInstalled("minikube version")
-                    checkPackageInstalled("helm version")
-                    checkPackageInstalled("java --version")
-                    checkPackageInstalled("mvn -v")
-                    checkPackageInstalled("npm version")
+                    executeCommand("minikube version")
+                    executeCommand("helm version")
+                    executeCommand("java --version")
+                    executeCommand("mvn -v")
+                    executeCommand("npm version")
                     def minikubeStatus = sh(script: "minikube status", returnStdout: true).trim()
-                    minikubeStatus.contains("host: Stopped") ? sh "minikube start" : echo "Minikube already started"
+                    minikubeStatus.contains("host: Stopped") ? executeCommand("minikube start") : echo "Minikube already started"
                 }
             }
         }
@@ -33,7 +33,7 @@ pipeline {
                     def result = sh(script: 'helm list -q | wc -l', returnStdout: true).trim()
                     (result.toInteger() > 0) ? sh 'helm list -q | xargs -n 1 helm delete' : echo 'No Helm releases found.'
                     echo (result.toInteger() > 0) ? 'All Helm releases have been deleted.' : 'No Helm releases found.'
-                    sh 'docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "usersubscription|videogameproducts|videogamestore" | xargs -r docker rmi -f'
+                    sh("docker images --format \"{{.Repository}}:{{.Tag}}\" | grep -E \"usersubscription|videogameproducts|videogamestore\" | xargs -r docker rmi -f")
                     echo "**** Docker Images Pruned ****"
                     def deployments = sh(script: "kubectl get deployments --all-namespaces", returnStdout: true).trim()
                     !deployments.contains("No resources found") ? sh "kubectl delete deployments --all --all-namespaces" : echo "No deployments found"
@@ -139,7 +139,7 @@ def createHelmManifest(def microservice) {
     }
 }
 
-def checkPackageInstalled(def command) {
+def executeCommand(def command) {
     try {
         sh(command)
         echo "${command} command executed successfully"
