@@ -36,7 +36,7 @@ pipeline {
                     executeCommand("docker images --format \"{{.Repository}}:{{.Tag}}\" | grep -E \"usersubscription|videogameproducts|videogamestore\" | xargs -r docker rmi -f")
                     echo "**** Docker Images Pruned ****"
                     def deployments = sh(script: "kubectl get deployments --all-namespaces", returnStdout: true).trim()
-                    !deployments.contains("No resources found") ? sh "kubectl delete deployments --all --all-namespaces" : echo "No deployments found"
+                    !deployments.contains("No resources found") ? executeCommand("kubectl delete deployments --all --all-namespaces") : executeCommand("echo 'No deployments found'")
                 }
             }
         }
