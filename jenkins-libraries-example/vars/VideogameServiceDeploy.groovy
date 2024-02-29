@@ -7,10 +7,10 @@ def getServicePort(def microservice) {
     def servicePort 
     switch (microservice) {
         case "usersubscription":
-            servicePort = "8081"
+            servicePort = "8090"
             break
         case "videogameproducts":
-                servicePort = "8100"
+            servicePort = "8100"
             break
         case "videogamestore":
             servicePort = "8080"
