@@ -47,12 +47,13 @@ def forwardKubernetesPort(def microservice, def choice) {
     echo "Pod Name ${microservice}: ${podName}"
     if(choice.equals("open")) {
         sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} > ${microservice}output.log 2>&1 &")
-        sh("cat ${microservice}output.log || true")
-        echo "Waiting for one minute before continue"
-        sleep 60
+        echo "Waiting for a few seconds before continue."
+        sleep 20
     } else if(choice.equals("close")) {
         sh("pgrep -f 'kubectl port-forward ${podName}' | xargs kill")
     }
+    echo "Check if the pod is in running."
+    forceForwardIfRequired("${microservice}","${servicePort}")
 }
 
 def runTestCucumber(def microservice, def testType) {
@@ -73,4 +74,20 @@ def runTestCucumber(def microservice, def testType) {
         sh("npm test")
     }
     println "*** ${microservice.toUpperCase()} : ${testType.toUpperCase()} COMPLETED SUCCESSFULLY ***"
+}
+
+def forceForwardIfRequired(def microservice, def servicePort) {
+    def servicePort
+    def isForwarded = false
+    while (isForwarded) {
+        def responseCode = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:${servicePort}/health", returnStdout: true).trim()
+        if (responseCode != '200') {
+            println "Service ${microservice} is not responding. Forwarding port again and cleaning up old forward..."
+            forwardKubernetesPort("${microservice}", "close")
+            forwardKubernetesPort("${microservice}", "open")
+        } else {
+            println "Service ${microservice} is running."
+            isForwarded = true
+        }
+    }
 }
