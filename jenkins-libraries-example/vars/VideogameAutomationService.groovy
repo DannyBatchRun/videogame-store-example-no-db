@@ -77,7 +77,6 @@ def runTestCucumber(def microservice, def testType) {
 }
 
 def forceForwardIfRequired(def microservice, def servicePort) {
-    def servicePort
     def isForwarded = false
     while (isForwarded) {
         def responseCode = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:${servicePort}/health", returnStdout: true).trim()
