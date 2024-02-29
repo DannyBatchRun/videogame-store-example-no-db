@@ -11,7 +11,7 @@ pipeline {
         stage('Check Running Packages') {
             steps {
                 script {
-                    def userName = env.BUILD_USER ?: 'Automated Process'
+                    def userName = env.BUILD_USER_ID ?: 'Automated Process'
                     currentBuild.displayName = "Build N° ${currentBuild.number}"
                     currentBuild.description = "Started by User ${userName}\nBranch_Name : ${params.BRANCH_NAME}\nTag Name : ${params.IMAGE_TAG}"
                     executeCommand("helm version")
@@ -60,7 +60,7 @@ pipeline {
                     echo "*** Pipeline Build in Local is in Running. This Pipeline will continue after finished. ****"
                     build(job: "videogame-store-build-complete", parameters: [
                         string(name: "BRANCH_NAME", value: "${params.BRANCH_NAME}"),
-                        string(name: "IMAGE_VERSION", value: "${params.IMAGE_TAG}")
+                        string(name: "IMAGE_TAG", value: "${params.IMAGE_TAG}")
                     ], wait: true)
                 }
             }
