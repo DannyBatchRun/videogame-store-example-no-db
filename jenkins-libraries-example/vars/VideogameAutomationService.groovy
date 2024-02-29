@@ -33,11 +33,10 @@ def installIntoDirectory(def path, def testType) {
 def forceForwardIfRequired(def microservice, def servicePort) {
     def isNotForwarded = true
     while (isNotForwarded) {
-        def responseCode = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:${servicePort}/health || true", returnStdout: true).trim()
+        def responseCode = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:${servicePort}/health", returnStdout: true).trim()
         if (responseCode != '200') {
             println "Service ${microservice} is not responding. Forwarding port again and cleaning up old forward..."
-            forwardKubernetesPort("${microservice}", "close")
-            forwardKubernetesPort("${microservice}", "open")
+            forwardKubernetesPort("${microservice}", "restart")
         } else {
             println "Service ${microservice} is running."
             isNotForwarded = false
@@ -60,14 +59,21 @@ def forwardKubernetesPort(def microservice, def choice) {
     }
     def podName = sh(script: "kubectl get pods -l \"app.kubernetes.io/instance=${microservice}\" -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
     echo "Pod Name ${microservice}: ${podName}"
-    if(choice.equals("open")) {
-        sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} > ${microservice}output.log 2>&1 &")
-        echo "Waiting for a few seconds before continue."
-        sleep 20
-        echo "Checking if the pod is in running..."
-        forceForwardIfRequired("${microservice}","${servicePort}")
-    } else if(choice.equals("close")) {
-        sh("pgrep -f 'kubectl port-forward ${podName}' | xargs kill")
+    switch("${choice}") {
+        case "open":
+            sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} > ${microservice}output.log 2>&1 &")
+            echo "Waiting for a few seconds before continue."
+            sleep 20
+            echo "Checking if the pod is in running..."
+            forceForwardIfRequired("${microservice}","${servicePort}")
+        break
+        case "close":
+            sh("pgrep -f 'kubectl port-forward ${podName}' | xargs kill")
+        break
+        case "restart":
+            sh("rm ${microservice}output.log || true")
+            sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} > ${microservice}output.log 2>&1 &")
+        break
     }
 }
 
