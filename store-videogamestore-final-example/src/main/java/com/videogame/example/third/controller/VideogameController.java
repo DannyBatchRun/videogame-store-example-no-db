@@ -42,8 +42,8 @@ public class VideogameController {
     @GetMapping("/synchronize")
     public String synchronizeAll() {
         RestTemplate restTemplate = new RestTemplate();
-        Videogame[] videogameArray = restTemplate.getForObject("http://localhost:8100/videogames", Videogame[].class);
-        Client[] clientArray = restTemplate.getForObject("http://localhost:8081/registered", Client[].class);
+        Videogame[] videogameArray = restTemplate.getForObject("http://host.docker.internal:8100/videogames", Videogame[].class);
+        Client[] clientArray = restTemplate.getForObject("http://host.docker.internal:8081/registered", Client[].class);
         if (videogameArray != null) {
             for (Videogame newVideogame : videogameArray) {
                 boolean exists = false;
