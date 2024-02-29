@@ -19,8 +19,11 @@ pipeline {
                     }
                     echo "**** FORWARDING MICROSERVICES IN PROGRESS ****"
                     service.forwardKubernetesPort("usersubscription","open")
+                    sh("cat usersubscriptionoutput.log || true")
                     service.forwardKubernetesPort("videogameproducts","open")
+                    sh("cat videogameproductsoutput.log || true")
                     service.forwardKubernetesPort("videogamestore","open")
+                    sh("cat videogamestoreoutput.log || true")
                     echo "**** CHECK VERSION OF NPM ****"
                     sh("npm version")
                 }
@@ -35,11 +38,11 @@ pipeline {
             steps {
                 script {
                     service.installDependenciesNodeJs("usersubscription")
-                    echo "** ADDING FOUR USERS FOR A SUBSCRIPTION MONHLY ** SLEEP FOR 2 MINUTES"
-                    sleep 120
+                    echo "** ADDING FOUR USERS FOR A SUBSCRIPTION MONHLY ** SLEEP FOR 20 SECONDS"
+                    sleep 20
                     service.runTestCucumber("usersubscription", "postrequestmonthly")
-                    echo "** ADDING FOUR USERS FOR A SUBSCRIPTION ANNUAL ** SLEEP FOR 2 MINUTES"
-                    sleep 120
+                    echo "** ADDING FOUR USERS FOR A SUBSCRIPTION ANNUAL ** SLEEP FOR 20 SECONDS"
+                    sleep 20
                     service.runTestCucumber("usersubscription", "postrequestannual")
                     service.runTestCucumber("usersubscription", "getrequest")
                 }
@@ -55,8 +58,8 @@ pipeline {
                 script {
                     service.installDependenciesNodeJs("videogameproducts")
                     service.runTestCucumber("videogameproducts", "postrequest")
-                    echo "*** PRODUCT ID TO BE DELETED : 1 *** SLEEP FOR 2 MINUTES"
-                    sleep 120
+                    echo "*** PRODUCT ID TO BE DELETED : 1 *** SLEEP FOR 20 SECONDS"
+                    sleep 20
                     service.runTestCucumber("videogameproducts", "deleterequest")
                     service.runTestCucumber("videogameproducts", "getrequest")
                 }
@@ -74,8 +77,8 @@ pipeline {
                     echo "*** SYNCRONIZING DATABASES OF USERSUBSCRIPTION AND VIDEOGAMEPRODUCTS ***"
                     service.runTestCucumber("videogamestore", "synchronize")
                     service.runTestCucumber("videogamestore", "postrequest")
-                    echo "*** WAITING FOR TWO MINUTES AFTER SEND GETREQUEST TEST ***"
-                    sleep 120
+                    echo "*** WAITING FOR 20 SECONDS AFTER SEND GETREQUEST TEST ***"
+                    sleep 20
                     service.runTestCucumber("videogamestore", "getrequest")
                 }
             }

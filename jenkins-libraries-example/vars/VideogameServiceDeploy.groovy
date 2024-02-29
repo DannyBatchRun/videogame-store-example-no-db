@@ -32,8 +32,11 @@ def pullDockerImage(def deployAll, def imageName, def imageVersion) {
 }
 
 def upgradeHelmDeployment(def imageName, def imageTag, def servicePort) {
+    def chartVersion = imageTag
+    chartVersion = chartVersion.replaceAll(/[^0-9.]/, '')
+    echo "**** Chart Version of Helm : ${chartVersion} ****"
     dir("helm-integration/${imageName}") {
-        sh("sed -i 's/^version: 0.1.0/version: '\"${imageTag}\"'/' Chart.yaml")
+        sh("sed -i 's/^version: 0.1.0/version: '\"${chartVersion}\"'/' Chart.yaml")
         sh("helm package .")
         sh("kubectl scale --replicas=0 deployment/${imageName}")
         sh("helm upgrade ${imageName} . --set image.repository=index.docker.io/dannybatchrun/${imageName},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort}")
