@@ -34,7 +34,7 @@ def forwardKubernetesPort(def microservice, def choice) {
     def servicePort
     switch("${microservice}") {
         case "usersubscription":
-            servicePort = "8081"
+            servicePort = "8090"
         break
         case "videogameproducts":
             servicePort = "8100"

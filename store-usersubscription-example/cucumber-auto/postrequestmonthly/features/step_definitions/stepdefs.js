@@ -10,7 +10,7 @@ let response;
 setDefaultTimeout(60 * 1000);
 
 Given('I set POST service api endpoint', function () {
-  apiEndpoint = 'http://localhost:8081/add/monthlysubscription';
+  apiEndpoint = 'http://localhost:8090/add/monthlysubscription';
 });
 
 When('set request BODY with following details:', function (dataTable) {
