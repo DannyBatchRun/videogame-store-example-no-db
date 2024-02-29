@@ -64,11 +64,11 @@ def forwardKubernetesPort(def microservice, def choice) {
         sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} > ${microservice}output.log 2>&1 &")
         echo "Waiting for a few seconds before continue."
         sleep 20
+        echo "Checking if the pod is in running..."
+        forceForwardIfRequired("${microservice}","${servicePort}")
     } else if(choice.equals("close")) {
         sh("pgrep -f 'kubectl port-forward ${podName}' | xargs kill")
     }
-    echo "Checking if the pod is in running..."
-    forceForwardIfRequired("${microservice}","${servicePort}")
 }
 
 def runTestCucumber(def microservice, def testType) {
