@@ -33,7 +33,7 @@ def installIntoDirectory(def path, def testType) {
 def forceForwardIfRequired(def microservice, def servicePort) {
     def isNotForwarded = true
     while (isNotForwarded) {
-        def responseCode = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:${servicePort}/health", returnStdout: true).trim()
+        def responseCode = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:${servicePort}/health || true", returnStdout: true).trim()
         if (responseCode != '200') {
             println "Service ${microservice} is not responding. Forwarding port again and cleaning up old forward..."
             forwardKubernetesPort("${microservice}", "restart")
@@ -44,7 +44,7 @@ def forceForwardIfRequired(def microservice, def servicePort) {
     }
 }
 
-def forwardKubernetesPort(def microservice, def servicePort, def choice) {
+def forwardKubernetesPort(def microservice, def servicePort def choice) {
     def podName = sh(script: "kubectl get pods -l \"app.kubernetes.io/instance=${microservice}\" -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
     echo "Pod Name ${microservice}: ${podName}"
     switch("${choice}") {
