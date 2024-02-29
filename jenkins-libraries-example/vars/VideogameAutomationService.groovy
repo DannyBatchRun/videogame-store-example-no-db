@@ -48,6 +48,8 @@ def forwardKubernetesPort(def microservice, def choice) {
     if(choice.equals("open")) {
         //sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} > output.log 2>&1 &")
         sh("nohup kubectl port-forward svc/${microservice} ${servicePort}:${servicePort} > output.log 2>&1 &")
+        echo "Waiting for one minute before continue"
+        sleep 60
     } else if(choice.equals("close")) {
         sh("pgrep -f 'kubectl port-forward ${podName}' | xargs kill")
     }

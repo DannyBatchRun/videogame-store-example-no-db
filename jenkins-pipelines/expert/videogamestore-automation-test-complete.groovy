@@ -21,8 +21,6 @@ pipeline {
                     service.forwardKubernetesPort("usersubscription","open")
                     service.forwardKubernetesPort("videogameproducts","open")
                     service.forwardKubernetesPort("videogamestore","open")
-                    echo "**** SLEEP FOR ONE MINUTE ****"
-                    sleep 60
                     echo "**** CHECK VERSION OF NPM ****"
                     sh("npm version")
                 }
