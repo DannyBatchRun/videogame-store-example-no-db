@@ -18,11 +18,11 @@ pipeline {
                         VIDEOGAMEPRODUCTS_TEST = true
                     }
                     echo "**** FORWARDING MICROSERVICES IN PROGRESS ****"
-                    service.forwardKubernetesPort("usersubscription","open")
+                    service.forwardKubernetesPort("usersubscription","8090","open")
                     sh("cat usersubscriptionoutput.log || true")
-                    service.forwardKubernetesPort("videogameproducts","open")
+                    service.forwardKubernetesPort("videogameproducts","8100","open")
                     sh("cat videogameproductsoutput.log || true")
-                    service.forwardKubernetesPort("videogamestore","open")
+                    service.forwardKubernetesPort("videogamestore","8080","open")
                     sh("cat videogamestoreoutput.log || true")
                     echo "**** CHECK VERSION OF NPM ****"
                     sh("npm version")
@@ -89,18 +89,16 @@ pipeline {
         success {
             script {
                 echo "Pipeline Success"
-                params.USERSUBSCRIPTION_TEST ? service.forwardKubernetesPort("usersubscription", "close") : null
-                params.VIDEOGAMEPRODUCTS_TEST ? service.forwardKubernetesPort("videogameproducts", "close") : null
-                params.VIDEOGAMESTORE_TEST ? service.forwardKubernetesPort("videogamestore", "close") : null
+                params.USERSUBSCRIPTION_TEST ? service.forwardKubernetesPort("usersubscription","8090","close") : null
+                params.VIDEOGAMEPRODUCTS_TEST ? service.forwardKubernetesPort("videogameproducts","8100","close") : null
+                params.VIDEOGAMESTORE_TEST ? service.forwardKubernetesPort("videogamestore","8080","close") : null
             }
             cleanWs()
         }
         failure {
             script {
                 echo "Pipeline Failure"
-                params.USERSUBSCRIPTION_TEST ? service.forwardKubernetesPort("usersubscription", "close") : null
-                params.VIDEOGAMEPRODUCTS_TEST ? service.forwardKubernetesPort("videogameproducts", "close") : null
-                params.VIDEOGAMESTORE_TEST ? service.forwardKubernetesPort("videogamestore", "close") : null
+                sh("minikube stop")
             }
             cleanWs()
         }
