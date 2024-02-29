@@ -11,9 +11,9 @@ pipeline {
         stage('Check Running Packages') {
             steps {
                 script {
-                    def userName = env.BUILD_USER_ID ?: 'Automated Process'
+                    BUILD_TRIGGER_BY = currentBuild.getBuildCauses()[0].shortDescription + " / " + currentBuild.getBuildCauses()[0].userId
                     currentBuild.displayName = "Build N° ${currentBuild.number}"
-                    currentBuild.description = "Started by User ${userName}\nBranch_Name : ${params.BRANCH_NAME}\nTag Name : ${params.IMAGE_TAG}"
+                    currentBuild.description = "${BUILD_TRIGGER_BY}\nBranch_Name : ${params.BRANCH_NAME}\nTag Name : ${params.IMAGE_TAG}"
                     executeCommand("helm version")
                     executeCommand("java --version")
                     executeCommand("mvn -v")
