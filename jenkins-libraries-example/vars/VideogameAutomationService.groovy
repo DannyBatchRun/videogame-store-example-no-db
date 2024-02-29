@@ -44,7 +44,7 @@ def forceForwardIfRequired(def microservice, def servicePort) {
     }
 }
 
-def forwardKubernetesPort(def microservice, def servicePort def choice) {
+def forwardKubernetesPort(def microservice, def servicePort, def choice) {
     def podName = sh(script: "kubectl get pods -l \"app.kubernetes.io/instance=${microservice}\" -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
     echo "Pod Name ${microservice}: ${podName}"
     switch("${choice}") {
