@@ -46,17 +46,18 @@ def forwardKubernetesPort(def microservice, def choice) {
     def podName = sh(script: "kubectl get pods -l \"app.kubernetes.io/instance=${microservice}\" -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
     echo "Pod Name ${microservice}: ${podName}"
     if(choice.equals("open")) {
-        sh("kubectl port-forward ${podName} ${servicePort}:${servicePort} > output.log 2>&1 &")
-        waitUntil {
-            script {
-                def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:${servicePort}/health", returnStdout: true).trim()
-                return response == '200'
-            }
-        }
+        sh("""
+            while true; do
+                kubectl port-forward ${podName} ${servicePort}:${servicePort} > output.log 2>&1
+                echo "Port-forwarding stopped, restarting..."
+                sleep 5
+            done &
+        """)
     } else if(choice.equals("close")) {
         sh("pgrep -f 'kubectl port-forward ${podName}' | xargs kill")
     }
 }
+
 
 def runTestCucumber(def microservice, def testType) {
     def path
