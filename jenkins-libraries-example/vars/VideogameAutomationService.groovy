@@ -31,19 +31,16 @@ def installIntoDirectory(def path, def testType) {
 }
 
 def forceForwardIfRequired(def microservice, def servicePort) {
-    def isForwarded = false
-    echo "************************************************ TEST"
-    while (isForwarded) {
-        echo "************************************************ TEST"
+    def isNotForwarded = true
+    while (isNotForwarded) {
         def responseCode = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:${servicePort}/health", returnStdout: true).trim()
         if (responseCode != '200') {
             println "Service ${microservice} is not responding. Forwarding port again and cleaning up old forward..."
             forwardKubernetesPort("${microservice}", "close")
             forwardKubernetesPort("${microservice}", "open")
         } else {
-            echo "************************************************ TEST"
             println "Service ${microservice} is running."
-            isForwarded = true
+            isNotForwarded = false
         }
     }
 }
