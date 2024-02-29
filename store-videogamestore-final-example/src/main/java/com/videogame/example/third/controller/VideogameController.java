@@ -42,8 +42,8 @@ public class VideogameController {
     @GetMapping("/synchronize")
     public String synchronizeAll() {
         RestTemplate restTemplate = new RestTemplate();
-        Videogame[] videogameArray = restTemplate.getForObject("http://videogameproducts:8100/videogames", Videogame[].class);
-        Client[] clientArray = restTemplate.getForObject("http://usersubscription:8081/registered", Client[].class);
+        Videogame[] videogameArray = restTemplate.getForObject("http://videogameproducts.default.svc.cluster.local:8100/videogames", Videogame[].class);
+        Client[] clientArray = restTemplate.getForObject("http://usersubscription.default.svc.cluster.local:8081/registered", Client[].class);
         if (videogameArray != null) {
             for (Videogame newVideogame : videogameArray) {
                 boolean exists = false;
