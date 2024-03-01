@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +19,9 @@ public class VideogameController {
     
     private List<Client> clients = new ArrayList<>();
     private List<Videogame> videogames = new ArrayList<>();
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @GetMapping("/") 
     public String getHome() {
@@ -41,7 +45,6 @@ public class VideogameController {
 
     @GetMapping("/synchronize")
     public String synchronizeAll() {
-        RestTemplate restTemplate = new RestTemplate();
         Videogame[] videogameArray = restTemplate.getForObject("http://localhost:8100/videogames", Videogame[].class);
         Client[] clientArray = restTemplate.getForObject("http://localhost:8090/registered", Client[].class);
         if (videogameArray != null) {
