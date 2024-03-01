@@ -48,7 +48,7 @@ public class VideogameController {
     public String synchronizeAll() {
         String urlVideogames = getServiceUrl("videogameproducts");
         String urlSubscription = getServiceUrl("usersubscription");
-        if (url == null) {
+        if (urlVideogames == null || urlSubscription == null) {
             return "Failed to get service URL!";
         }
         Videogame[] videogameArray = restTemplate.getForObject(urlVideogames + "/videogames", Videogame[].class);
