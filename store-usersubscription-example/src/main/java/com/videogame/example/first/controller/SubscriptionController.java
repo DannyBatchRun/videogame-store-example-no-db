@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.CrossOrigin;
 import com.videogame.example.first.model.Client;
 
 import java.util.*;
@@ -22,7 +22,8 @@ public class SubscriptionController {
 		String welcome = "Welcome to VideoGame Store!\nSubmit your request adding path /add/monthlysubscription or /add/annualsubscription\nWith name and surname of the new subscriber.";
 		return new ResponseEntity<>(welcome, HttpStatus.OK);
 	}
-	
+
+	@CrossOrigin(origins = "http://localhost:8080")
 	@GetMapping("/registered") 
 	public List<Client> getClients() {
 		return clients;
