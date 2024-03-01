@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
-
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import com.videogame.example.third.model.*;
 
 @RestController
@@ -45,9 +46,14 @@ public class VideogameController {
 
     @GetMapping("/synchronize")
     public String synchronizeAll() {
-        Videogame[] videogameArray = restTemplate.getForObject("http://videogameproducts-service:8100/videogames", Videogame[].class);
-        Client[] clientArray = restTemplate.getForObject("http://usersubscription-service:8090/registered", Client[].class);
-        if (videogameArray != null) {
+        String urlVideogames = getServiceUrl("videogameproducts");
+        String urlSubscription = getServiceUrl("usersubscription");
+        if (url == null) {
+            return "Failed to get service URL!";
+        }
+        Videogame[] videogameArray = restTemplate.getForObject(urlVideogames + "/videogames", Videogame[].class);
+        Client[] clientArray = restTemplate.getForObject(urlSubscription + "/registered", Client[].class);
+                if (videogameArray != null) {
             for (Videogame newVideogame : videogameArray) {
                 boolean exists = false;
                 for (Videogame existingVideogame : videogames) {
@@ -75,10 +81,19 @@ public class VideogameController {
                 }
             }
         }
-        return "Data synchronized successfully!";
+        return "Data synchronized successfully!";   
     }
-    
-    
+
+    private String getServiceUrl(String serviceName) {
+        try {
+            Process process = Runtime.getRuntime().exec("minikube service " + serviceName + " --url");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            return reader.readLine();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     @PostMapping("/add/cart")
     public Map<String, Client> addVideogameToCart(@Validated @RequestBody Map<String, String> requestBody) {
