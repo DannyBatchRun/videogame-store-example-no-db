@@ -42,7 +42,6 @@ def upgradeHelmDeployment(def imageName, def imageTag, def servicePort) {
         sh("helm upgrade ${imageName} . --set image.repository=index.docker.io/dannybatchrun/${imageName},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort}")
         sh("kubectl scale --replicas=1 deployment/${imageName}")
         sh("kubectl patch svc ${imageName} -p '{\"spec\": {\"type\": \"NodePort\"}}'")
-        sh("kubectl expose deployment ${imageName} --type=NodePort --port=8090")
     }
 }
 
