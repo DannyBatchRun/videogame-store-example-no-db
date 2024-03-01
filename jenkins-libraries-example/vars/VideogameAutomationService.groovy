@@ -32,6 +32,7 @@ def installDependenciesNodeJs(def microservice) {
 }
 
 def retryForward(def microservice, def servicePort, def podName) {
+    sh("pgrep -f 'kubectl port-forward ${podName}' | xargs kill")
     sh("rm ${microservice}output.log || true")
     sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} > ${microservice}output.log 2>&1 &")
     sleep 20
