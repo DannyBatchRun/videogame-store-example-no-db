@@ -31,18 +31,18 @@ def installDependenciesNodeJs(def microservice) {
     }
 }
 
-def retryForward(def microservice, def servicePort) {
+def retryForward(def microservice, def servicePort, def podName) {
     sh("rm ${microservice}output.log || true")
     sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} > ${microservice}output.log 2>&1 &")
 }
 
-def forceForwardIfRequired(def microservice, def servicePort) {
+def forceForwardIfRequired(def microservice, def servicePort, def podName) {
     def isNotForwarded = true
     while (isNotForwarded) {
         def responseCode = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:${servicePort}/health || true", returnStdout: true).trim()
         if (responseCode != '200') {
             println "Service ${microservice} is not responding. Forwarding port again and cleaning up old forward..."
-            retryForward("${microservice}","${servicePort}")
+            retryForward("${microservice}","${servicePort}","${podName}")
         } else {
             println "Service ${microservice} is running."
             isNotForwarded = false
@@ -58,7 +58,7 @@ def forwardKubernetesPort(def microservice, def servicePort, def choice) {
         echo "Waiting for a few seconds before continue."
         sleep 20
         echo "Checking if the pod is in running..."
-        forceForwardIfRequired("${microservice}","${servicePort}")
+        forceForwardIfRequired("${microservice}","${servicePort}","${podName}")
     } else if (choice.equals("close")) {
         sh("pgrep -f 'kubectl port-forward ${podName}' | xargs kill")
     }
