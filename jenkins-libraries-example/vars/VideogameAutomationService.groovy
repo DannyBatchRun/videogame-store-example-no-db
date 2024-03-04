@@ -52,7 +52,7 @@ def forceForwardIfRequired(def microservice, def servicePort, def podName) {
 }
 
 def forwardKubernetesPort(def microservice, def servicePort, def choice) {
-    def podName = sh(script: 'kubectl get pods | grep \${microservice} | awk \'{print $1}\'', returnStdout: true).trim()
+    def podName = sh(script: "kubectl get pods | grep ${microservice} | awk \'{print $1}\'", returnStdout: true).trim()
     echo "Pod Name ${microservice}: ${podName}"
     if(choice.equals("open")) {
         sh('nohup kubectl port-forward ' + podName + ' ' + servicePort + ':' + servicePort + ' & echo $! > ' + microservice + 'output.txt')
