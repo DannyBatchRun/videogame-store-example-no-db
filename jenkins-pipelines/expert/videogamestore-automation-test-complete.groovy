@@ -19,11 +19,11 @@ pipeline {
                     }
                     echo "**** FORWARDING MICROSERVICES IN PROGRESS ****"
                     service.forwardKubernetesPort("usersubscription","8090","open")
-                    sh("cat usersubscriptionoutput.log || true")
+                    sh("cat usersubscriptionoutput.txt || true")
                     service.forwardKubernetesPort("videogameproducts","8100","open")
-                    sh("cat videogameproductsoutput.log || true")
+                    sh("cat videogameproductsoutput.txt || true")
                     service.forwardKubernetesPort("videogamestore","8080","open")
-                    sh("cat videogamestoreoutput.log || true")
+                    sh("cat videogamestoreoutput.txt || true")
                     echo "**** CHECK VERSION OF NPM ****"
                     sh("npm version")
                 }
