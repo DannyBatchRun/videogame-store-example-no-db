@@ -85,9 +85,6 @@ pipeline {
         success {
             script {
                 echo "Pipeline Success"
-                params.USERSUBSCRIPTION_TEST ? service.forwardKubernetesPort("usersubscription","8090","close") : null
-                params.VIDEOGAMEPRODUCTS_TEST ? service.forwardKubernetesPort("videogameproducts","8100","close") : null
-                params.VIDEOGAMESTORE_TEST ? service.forwardKubernetesPort("videogamestore","8080","close") : null
             }
             cleanWs()
         }
