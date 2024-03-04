@@ -55,7 +55,8 @@ def forwardKubernetesPort(def microservice, def servicePort, def choice) {
     def podName = sh(script: 'kubectl get pods | grep \${microservice} | awk \'{print $1}\'', returnStdout: true).trim()
     echo "Pod Name ${microservice}: ${podName}"
     if(choice.equals("open")) {
-        sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} > ${microservice}output.log 2>&1 &")
+        def command = "nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} & echo $! > ${microservice}output.txt"
+        sh("${command}")
         echo "Waiting for a few seconds before continue."
         sleep 20
         echo "Checking if the pod is in running..."
