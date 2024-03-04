@@ -65,8 +65,8 @@ def forwardKubernetesPort(def microservice, def servicePort, def choice) {
         forceForwardIfRequired("${microservice}","${servicePort}","${podName}")
     } else if (choice.equals("close")) {
         def command = "pkill -f \\'kubectl port-forward ${podName}\\'"
-        sh("${command}")
         echo "Running command: ${command}"
+        sh("${command}")
    }
 }
 
