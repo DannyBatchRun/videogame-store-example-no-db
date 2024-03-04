@@ -75,6 +75,7 @@ pipeline {
                 script {
                     service.installDependenciesNodeJs("videogamestore")
                     echo "*** SYNCRONIZING DATABASES OF USERSUBSCRIPTION AND VIDEOGAMEPRODUCTS ***"
+                    service.prepareSynchronize()
                     service.runTestCucumber("videogamestore", "synchronize")
                     service.runTestCucumber("videogamestore", "postrequest")
                     echo "*** WAITING FOR 20 SECONDS AFTER SEND GETREQUEST TEST ***"
