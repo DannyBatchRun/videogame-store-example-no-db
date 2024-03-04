@@ -32,7 +32,7 @@ def installDependenciesNodeJs(def microservice) {
 }
 
 def retryForward(def microservice, def servicePort, def podName) {
-    sh("kill $(cat ${microservice}output.txt) && rm ${microservice}output.txt")
+    sh("kill \$(cat ${microservice}output.txt) && rm ${microservice}output.txt")
     sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} & echo $! > ${microservice}output.txt")
     sleep 20
 }
@@ -61,7 +61,7 @@ def forwardKubernetesPort(def microservice, def servicePort, def choice) {
         echo "Checking if the pod is in running..."
         forceForwardIfRequired("${microservice}","${servicePort}","${podName}")
     } else if (choice.equals("close")) {
-        sh("kill $(cat ${microservice}output.txt) && rm ${microservice}output.txt")
+        sh("kill \$(cat ${microservice}output.txt) && rm ${microservice}output.txt")
     }
 }
 
