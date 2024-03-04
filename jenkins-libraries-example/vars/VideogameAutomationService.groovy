@@ -32,8 +32,7 @@ def installDependenciesNodeJs(def microservice) {
 }
 
 def retryForward(def microservice, def servicePort, def podName) {
-    def command = "kubectl port-forward ${podName}"
-    sh(script: 'pid=$(ps aux | grep "$1" | grep -v grep | awk \'{print $2}\'); if [ -n "$pid" ]; then kill $pid; fi', args: [command])
+    sh('pkill -f "kubectl port-forward $${podName}"')
     sh("rm ${microservice}output.log || true")
     sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} > ${microservice}output.log 2>&1 &")
     sleep 20
@@ -63,9 +62,8 @@ def forwardKubernetesPort(def microservice, def servicePort, def choice) {
         echo "Checking if the pod is in running..."
         forceForwardIfRequired("${microservice}","${servicePort}","${podName}")
     } else if (choice.equals("close")) {
-       def command = "kubectl port-forward ${podName}"
-       sh(script: 'pid=$(ps aux | grep "$1" | grep -v grep | awk \'{print $2}\'); if [ -n "$pid" ]; then kill $pid; fi', args: [command])
-    }
+        sh('pkill -f "kubectl port-forward $${podName}"')
+   }
 }
 
 def runTestCucumber(def microservice, def testType) {
