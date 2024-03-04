@@ -3,11 +3,47 @@ def call() {
     return this;
 }
 
-
 def installIntoDirectory(def path, def testType) {
     dir ("${path}/cucumber-auto/${testType}") {
         sh("npm install --save @cucumber/cucumber axios pactum")
         echo "Dependencies installed for ${testType}"
+    }
+}
+
+def prepareEndpoints(def microservice) {
+    switch("${microservice}") {
+        case "usersubscription":
+            replaceEndpoints("usersubscription","store-usersubscription-example","postrequestmonthly","8090")
+            replaceEndpoints("usersubscription","store-usersubscription-example","postrequestannual","8090")
+            replaceEndpoints("usersubscription","store-usersubscription-example","getrequest","8090")
+        break
+        case "videogameproducts":
+            replaceEndpoints("videogameproducts","store-videogame-products-example","postrequest","8100")
+            replaceEndpoints("videogameproducts","store-videogame-products-example","getrequest","8100")
+            replaceEndpoints("videogameproducts","store-videogame-products-example","deleterequest","8100")
+        break
+        case "videogamestore":
+            replaceEndpoints("videogamestore","store-videogamestore-final-example","synchronize","8080")
+            replaceEndpoints("videogamestore","store-videogamestore-final-example","postrequest","8080")
+            replaceEndpoints("videogamestore","store-videogamestore-final-example","getrequest","8080")
+        break    
+    }
+}
+
+def replaceEndpoints(def microservice, def path, def testType, def servicePort) {
+    def apiEndpoint = sh(script: "minikube service ${microservice} --url | head -n 1", returnStdout: true).toString().trim()
+    dir("${path}/cucumber-auto/${testType}/features/step_definitions") {
+        def file = readFile('stepdefs.js')
+        def replaced = file.replace("http://localhost:${servicePort}", apiEndpoint)
+        writeFile(file: 'stepdefs.js', text: replaced)
+    }
+    if(microservice.equals("videogamestore")) {
+        dir ("store-videogamestore-final-example/cucumber-auto/synchronize") {
+            def urlSubscription = sh(script: 'minikube service usersubscription --url | head -n 1', returnStdout: true).toString().trim()
+            def urlVideogame = sh(script: 'minikube service videogameproducts --url | head -n 1', returnStdout: true).toString().trim()
+            sh("sed -i 's|ENDPOINT_USERSUBSCRIPTION|'\"${urlSubscription}\"'|g' features/synchronize_all.feature")
+            sh("sed -i 's|ENDPOINT_VIDEOGAMEPRODUCTS|'\"${urlVideogame}\"'|g' features/synchronize_all.feature")
+        }
     }
 }
 
@@ -31,40 +67,6 @@ def installDependenciesNodeJs(def microservice) {
     }
 }
 
-def retryForward(def microservice, def servicePort, def podName) {
-    sh("kill \$(cat ${microservice}output.txt) && rm ${microservice}output.txt || true")
-    sh('nohup kubectl port-forward ' + podName + ' ' + servicePort + ':' + servicePort + ' & echo $! > ' + microservice + 'output.txt')
-    sleep 20
-}
-
-def forceForwardIfRequired(def microservice, def servicePort, def podName) {
-    def isNotForwarded = true
-    while (isNotForwarded) {
-        def responseCode = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:${servicePort}/health || true", returnStdout: true).trim()
-        if (responseCode != '200') {
-            println "Service ${microservice} is not responding. Forwarding port again and cleaning up old forward..."
-            retryForward("${microservice}","${servicePort}","${podName}")
-        } else {
-            println "Service ${microservice} is running."
-            isNotForwarded = false
-        }
-    }
-}
-
-def forwardKubernetesPort(def microservice, def servicePort, def choice) {
-    def podName = sh(script: 'kubectl get pods | grep ' + microservice + ' | awk \'{print $1}\'', returnStdout: true).trim()
-    echo "Pod Name ${microservice}: ${podName}"
-    if(choice.equals("open")) {
-        sh('nohup kubectl port-forward ' + podName + ' ' + servicePort + ':' + servicePort + ' & echo $! > ' + microservice + 'output.txt')
-        echo "Waiting for a few seconds before continue."
-        sleep 20
-        echo "Checking if the pod is in running..."
-        forceForwardIfRequired("${microservice}","${servicePort}","${podName}")
-    } else if (choice.equals("close")) {
-        sh("kill \$(cat ${microservice}output.txt) && rm ${microservice}output.txt")
-    }
-}
-
 def runTestCucumber(def microservice, def testType) {
     def path
     switch("${microservice}") {
@@ -83,13 +85,4 @@ def runTestCucumber(def microservice, def testType) {
         sh("npm test")
     }
     println "*** ${microservice.toUpperCase()} : ${testType.toUpperCase()} COMPLETED SUCCESSFULLY ***"
-}
-
-def prepareSynchronize() {
-    def urlSubscription = sh(script: 'minikube service usersubscription --url | head -n 1', returnStdout: true).toString().trim()
-    def urlVideogame = sh(script: 'minikube service videogameproducts --url | head -n 1', returnStdout: true).toString().trim()
-    dir ("store-videogamestore-final-example/cucumber-auto/synchronize") {
-        sh("sed -i 's|ENDPOINT_USERSUBSCRIPTION|'\"${urlSubscription}\"'|g' features/synchronize_all.feature")
-        sh("sed -i 's|ENDPOINT_VIDEOGAMEPRODUCTS|'\"${urlVideogame}\"'|g' features/synchronize_all.feature")
-    }
 }

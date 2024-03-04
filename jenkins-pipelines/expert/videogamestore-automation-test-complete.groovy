@@ -10,17 +10,13 @@ pipeline {
         booleanParam(name: 'VIDEOGAMESTORE_TEST', description: "Spunta questa casella se vuoi testare l'applicazione Videogamestore. ATTENZIONE! Se selezionato, verranno lanciati anche i test di UserSubscription e VideogameStore.")
     }
     stages {
-        stage('Initialization') {
+        stage('VideogameStore Check') {
             steps {
                 script {
                     if (params.VIDEOGAMESTORE_TEST && (!params.USERSUBSCRIPTION_TEST || !params.VIDEOGAMEPRODUCTS_TEST)) {
                         USERSUBSCRIPTION_TEST = true
                         VIDEOGAMEPRODUCTS_TEST = true
                     }
-                    echo "**** FORWARDING MICROSERVICES IN PROGRESS ****"
-                    service.forwardKubernetesPort("usersubscription","8090","open")
-                    service.forwardKubernetesPort("videogameproducts","8100","open")
-                    service.forwardKubernetesPort("videogamestore","8080","open")
                     echo "**** CHECK VERSION OF NPM ****"
                     sh("npm version")
                 }
@@ -34,6 +30,7 @@ pipeline {
             }
             steps {
                 script {
+                    service.prepareEndpoints("usersubscription")
                     service.installDependenciesNodeJs("usersubscription")
                     echo "** ADDING FOUR USERS FOR A SUBSCRIPTION MONHLY ** SLEEP FOR 20 SECONDS"
                     sleep 20
@@ -53,6 +50,7 @@ pipeline {
             }
             steps {
                 script {
+                    service.prepareEndpoints("videogameproducts")
                     service.installDependenciesNodeJs("videogameproducts")
                     service.runTestCucumber("videogameproducts", "postrequest")
                     echo "*** PRODUCT ID TO BE DELETED : 1 *** SLEEP FOR 20 SECONDS"
@@ -70,9 +68,9 @@ pipeline {
             }
             steps {
                 script {
+                    service.prepareEndpoints("videogamestore")
                     service.installDependenciesNodeJs("videogamestore")
                     echo "*** SYNCRONIZING DATABASES OF USERSUBSCRIPTION AND VIDEOGAMEPRODUCTS ***"
-                    service.prepareSynchronize()
                     service.runTestCucumber("videogamestore", "synchronize")
                     service.runTestCucumber("videogamestore", "postrequest")
                     echo "*** WAITING FOR 20 SECONDS AFTER SEND GETREQUEST TEST ***"
