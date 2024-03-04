@@ -32,7 +32,7 @@ def installDependenciesNodeJs(def microservice) {
 }
 
 def retryForward(def microservice, def servicePort, def podName) {
-    sh('pkill -f "kubectl port-forward $${podName}"')
+    sh("pkill -f 'kubectl port-forward ${podName}'")
     sh("rm ${microservice}output.log || true")
     sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} > ${microservice}output.log 2>&1 &")
     sleep 20
@@ -62,7 +62,7 @@ def forwardKubernetesPort(def microservice, def servicePort, def choice) {
         echo "Checking if the pod is in running..."
         forceForwardIfRequired("${microservice}","${servicePort}","${podName}")
     } else if (choice.equals("close")) {
-        sh('pkill -f "kubectl port-forward $${podName}"')
+        sh("pkill -f 'kubectl port-forward ${podName}'")
    }
 }
 
