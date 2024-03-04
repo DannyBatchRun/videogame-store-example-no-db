@@ -90,7 +90,7 @@ def prepareSynchronize() {
     def urlSubscription = sh(script: 'minikube service usersubscription --url | head -n 1', returnStdout: true).toString().trim()
     def urlVideogame = sh(script: 'minikube service videogameproducts --url | head -n 1', returnStdout: true).toString().trim()
     dir ("store-videogamestore-final-example/cucumber-auto/synchronize") {
-        sh("sed -i 's/ENDPOINT_USERSUBSCRIPTION/'\"${urlSubscription}\"'/g' features/synchronize_all.feature.feature")
-        sh("sed -i 's/ENDPOINT_VIDEOGAMEPRODUCTS/'\"${urlVideogame}\"'/g' features/synchronize_all.feature.feature")
+        sh("sed -i 's|ENDPOINT_USERSUBSCRIPTION|'\"${urlSubscription}\"'|g' features/synchronize_all.feature.feature")
+        sh("sed -i 's|ENDPOINT_VIDEOGAMEPRODUCTS|'\"${urlVideogame}\"'|g' features/synchronize_all.feature.feature")
     }
 }
