@@ -32,11 +32,8 @@ def installDependenciesNodeJs(def microservice) {
 }
 
 def retryForward(def microservice, def servicePort, def podName) {
-    def command = "pkill -f \\'kubectl port-forward ${podName}\\'"
-    echo "Running command: ${command}"
-    sh("${command}")
-    sh("rm ${microservice}output.log || true")
-    sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} > ${microservice}output.log 2>&1 &")
+    sh("kill $(cat ${microservice}output.txt) && rm ${microservice}output.txt")
+    sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} & echo $! > ${microservice}output.txt")
     sleep 20
 }
 
@@ -55,19 +52,17 @@ def forceForwardIfRequired(def microservice, def servicePort, def podName) {
 }
 
 def forwardKubernetesPort(def microservice, def servicePort, def choice) {
-    def podName = sh(script: "kubectl get pods -l \"app.kubernetes.io/instance=${microservice}\" -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
+    def podName = sh(script: 'kubectl get pods | grep \${microservice} | awk \'{print $1}\'', returnStdout: true).trim()
     echo "Pod Name ${microservice}: ${podName}"
     if(choice.equals("open")) {
-        sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} > ${microservice}output.log 2>&1 &")
+        sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} & echo $! > ${microservice}output.txt")
         echo "Waiting for a few seconds before continue."
         sleep 20
         echo "Checking if the pod is in running..."
         forceForwardIfRequired("${microservice}","${servicePort}","${podName}")
     } else if (choice.equals("close")) {
-        def command = "pkill -f \\'kubectl port-forward ${podName}\\'"
-        echo "Running command: ${command}"
-        sh("${command}")
-   }
+        sh("kill $(cat ${microservice}output.txt) && rm ${microservice}output.txt")
+    }
 }
 
 def runTestCucumber(def microservice, def testType) {
