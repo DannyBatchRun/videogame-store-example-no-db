@@ -32,7 +32,7 @@ def installDependenciesNodeJs(def microservice) {
 }
 
 def retryForward(def microservice, def servicePort, def podName) {
-    sh("""pgrep -f 'kubectl port-forward \\'${podName}\\'' | xargs kill""")
+    sh("""pgrep -f "kubectl port-forward ${podName}" | xargs kill""")
     sh("rm ${microservice}output.log || true")
     sh("nohup kubectl port-forward ${podName} ${servicePort}:${servicePort} > ${microservice}output.log 2>&1 &")
     sleep 20
@@ -62,7 +62,7 @@ def forwardKubernetesPort(def microservice, def servicePort, def choice) {
         echo "Checking if the pod is in running..."
         forceForwardIfRequired("${microservice}","${servicePort}","${podName}")
     } else if (choice.equals("close")) {
-        sh("""pgrep -f 'kubectl port-forward \\'${podName}\\'' | xargs kill""")
+        sh("""pgrep -f "kubectl port-forward ${podName}" | xargs kill""")
     }
 }
 
@@ -84,4 +84,13 @@ def runTestCucumber(def microservice, def testType) {
         sh("npm test")
     }
     println "*** ${microservice.toUpperCase()} : ${testType.toUpperCase()} COMPLETED SUCCESSFULLY ***"
+}
+
+def prepareSynchronize() {
+    def urlSubscription = sh(script: 'minikube service usersubscription --url | head -n 1', returnStdout: true).toString().trim()
+    def urlVideogame = sh(script: 'minikube service videogameproducts --url | head -n 1', returnStdout: true).toString().trim()
+    dir ("store-videogamestore-final-example/cucumber-auto/synchronize") {
+        sh("sed -i 's/ENDPOINT_USERUSBSCRIPTION/'\"${urlSubscription}\"'/g' features/synchronize_all.feature.feature")
+        sh("sed -i 's/ENDPOINT_VIDEOGAMEPRODUCTS/'\"${urlVideogame}\"'/g' features/synchronize_all.feature.feature")
+    }
 }
