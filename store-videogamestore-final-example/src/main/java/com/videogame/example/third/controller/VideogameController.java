@@ -85,11 +85,13 @@ public class VideogameController {
         return clients;
     }
 
-    @GetMapping("/synchronize")
-    public String synchronizeAll() {
+    @PostMapping("/synchronize")
+    public String synchronizeAll(@Validated @RequestBody Map<String, String> endpoints) {
         RestTemplate restTemplate = new RestTemplate();
-        Videogame[] videogameArray = restTemplate.getForObject("http://videogameproducts:8100/videogames", Videogame[].class);
-        Client[] clientArray = restTemplate.getForObject("http://usersubscription:8081/registered", Client[].class);
+        String fullSubscription = endpoints.get("subscriptionEndpoint") + "/registered";
+        String fullVideogame = endpoints.get("videogameEndpoint") + "/videogames";
+        Videogame[] videogameArray = restTemplate.getForObject(fullVideogame, Videogame[].class);
+        Client[] clientArray = restTemplate.getForObject(fullSubscription, Client[].class);
         if (videogameArray != null) {
             for (Videogame newVideogame : videogameArray) {
                 boolean exists = false;
@@ -119,9 +121,7 @@ public class VideogameController {
             }
         }
         return "Data synchronized successfully!";
-    }
-    
-    
+    }    
 
     @PostMapping("/add/cart")
     public Map<String, Client> addVideogameToCart(@Validated @RequestBody Map<String, String> requestBody) {
