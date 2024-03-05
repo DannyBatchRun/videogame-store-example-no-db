@@ -82,8 +82,7 @@ pipeline {
             steps {
                 script {
                     echo "*** Pipeline Automation Test is in Running. This Pipeline will continue after finished. ***"
-                    echo "*** Waiting Containers for start. Sleep in one minute ***"
-                    sleep 60
+                    echo "*** Waiting Containers for start. Sleep for 5 minutes. ***"
                     build(job: "videogame-store-automation-test-complete", parameters: [
                         booleanParam(name: "USERSUBSCRIPTION_TEST", value: true),
                         booleanParam(name: "VIDEOGAMEPRODUCTS_TEST", value: true),
