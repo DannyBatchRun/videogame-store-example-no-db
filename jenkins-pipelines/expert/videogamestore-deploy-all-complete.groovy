@@ -1,11 +1,10 @@
-def DEPLOY_EKS = false
+def DEPLOY_GKE
 
 pipeline {
     agent any
     parameters {
         string(name: 'BRANCH_NAME', defaultValue: 'master', description: 'Inserisci il branch per eseguire il test.')
         string(name: 'IMAGE_TAG', defaultValue: '1.0.0', description: 'Inserisci il versionamento. Esempio : 1.0.0')
-        booleanParam(name: 'CLEAN_ALL', description: "ATTENZIONE! Seleziona questa casella solo intendi cancellare eventuali installazioni in locale.")
     }
     stages {
         stage('Check Running Packages') {
@@ -25,13 +24,9 @@ pipeline {
             }
         }
         stage('Clean Previous Install') {
-            when {
-                expression {
-                    return params.CLEAN_ALL
-                }
-            }
             steps {
                 script {
+                    echo "**** Cleaning old builds with Helm and Docker ****"
                     def result = sh(script: 'helm list -q | wc -l', returnStdout: true).toString().trim()
                     result = result.toInteger()
                     (result > 0) ? executeCommand("helm list -q | xargs -n 1 helm delete") : 'No Helm releases found.'
@@ -91,25 +86,19 @@ pipeline {
                 }
             }
         }
-        stage('Pause on Deploy') {
+        stage('Deploy on GKE') {
             steps {
                 script {
-                    def userInput = input(id: 'confirm', message: 'Proceed with deploy?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Click yes to proceed', name: 'Yes']])
-                    DEPLOY_EKS = (userInput == 'Yes') ? true : false
-                    echo (DEPLOY_EKS.toString() == 'true' ? "**** You Selected Yes. Deploy will start in a minute ****" : "**** You selected No. Deploy will abort. ****")
-                }
-            }
-        }
-        stage('Deploy on EKS') {
-            when {
-                expression {
-                    return DEPLOY_EKS
-                }
-            }
-            steps {
-                script {
-                    sleep 60
-                    echo "*** FAKE DEPLOY : Deployed in EKS ****"
+                    def userInput = input(id: 'confirm', message: 'Proceed with GKE deploy?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Click yes to proceed', name: 'Yes']])
+                    DEPLOY_GKE = (userInput == 'Yes') ? true : false
+                    if (DEPLOY_GKE) {
+                        echo "**** You Selected Yes. GKE Deploy will start in a minute ****"
+                        sleep 60
+                    } else {
+                        echo "**** You selected No. Pipeline will complete without GKE deployment. ****"
+                        currentBuild.result = 'SUCCESS'
+                        error("Deployment aborted by user.")
+                    }
                 }
             }
         }
@@ -117,8 +106,10 @@ pipeline {
     post {
         success {
             script {
-                echo "Pipeline Success"
-                params.CLEAN_ALL ? "Cleaned All Helm Releases and Docker Images" : "Helm Releases and Docker Images are not cleaned."
+                echo "**** Pipeline SUCCESS ****"
+                def message = DEPLOY_GKE ? "**** GKE Deployment is set to true. Proceeding with deployment. ****" : "**** GKE Deployment is set to false. Aborting deployment. ****"
+                echo message
+                echo "**** Docker Images ****"
                 sh("docker image ls | grep usersubscription")
                 sh("docker image ls | grep videogameproducts")
                 sh("docker image ls | grep videogamestore")
@@ -128,7 +119,7 @@ pipeline {
         }
         failure {
             script {
-                echo "Pipeline Failure"
+                echo "**** Pipeline FAILURE ****"
             }
             cleanWs()
         }
