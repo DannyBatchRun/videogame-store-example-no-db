@@ -90,14 +90,12 @@ pipeline {
             steps {
                 script {
                     def userInput = input(id: 'confirm', message: 'Proceed with GKE deploy?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Click yes to proceed', name: 'Yes']])
-                    DEPLOY_GKE = (userInput == 'Yes') ? true : false
+                    DEPLOY_GKE = userInput
                     if (DEPLOY_GKE) {
                         echo "**** You Selected Yes. GKE Deploy will start in a minute ****"
-                        sleep 60
                     } else {
                         echo "**** You selected No. Pipeline will complete without GKE deployment. ****"
                         currentBuild.result = 'SUCCESS'
-                        error("Deployment aborted by user.")
                     }
                 }
             }
