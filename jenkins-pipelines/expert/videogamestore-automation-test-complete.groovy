@@ -17,6 +17,7 @@ pipeline {
                         USERSUBSCRIPTION_TEST = true
                         VIDEOGAMEPRODUCTS_TEST = true
                     }
+                    sleep 300
                     echo "**** CHECK VERSION OF NPM ****"
                     sh("npm version")
                 }
