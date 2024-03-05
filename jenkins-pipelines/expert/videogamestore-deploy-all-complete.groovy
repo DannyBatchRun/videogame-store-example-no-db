@@ -35,8 +35,9 @@ pipeline {
                     def result = sh(script: 'helm list -q | wc -l', returnStdout: true).toString().trim()
                     result = result.toInteger()
                     (result > 0) ? executeCommand("helm list -q | xargs -n 1 helm delete") : 'No Helm releases found.'
-                    def dockerImages = sh(script: 'docker images --format "{{.Repository}}" | grep -E "usersubscription|videogameproducts|videogamestore"', returnStdout: true).trim()
-                    (dockerImages) ? dockerImages.split("\n").each { image -> executeCommand("docker rmi -f ${image} || true") } : println('No Docker images found')
+                    executeCommand("docker rmi \$(docker images -q dannybatchrun/usersubscription) --force || true")
+                    executeCommand("docker rmi \$(docker images -q dannybatchrun/videogameproducts) --force || true")
+                    executeCommand("docker rmi \$(docker images -q dannybatchrun/videogamestore) --force || true")
                     echo "**** Docker Images Pruned ****"
                     def deployments = sh(script: "kubectl get deployments --all-namespaces", returnStdout: true).trim()
                     !deployments.contains("No resources found") ? executeCommand("kubectl delete deployments --all --all-namespaces") : 'No deployments found'
@@ -96,7 +97,7 @@ pipeline {
                 script {
                     def userInput = input(id: 'confirm', message: 'Proceed with deploy?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Click yes to proceed', name: 'Yes']])
                     DEPLOY_EKS = (userInput == 'Yes') ? true : false
-                    echo (DEPLOY_EKS) ? "**** You Selected Yes. Deploy will start in a minute ****" : "**** You selected No. Deploy will abort. ****"
+                    echo (DEPLOY_EKS.toString() == 'true' ? "**** You Selected Yes. Deploy will start in a minute ****" : "**** You selected No. Deploy will abort. ****")
                 }
             }
         }
