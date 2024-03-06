@@ -1,3 +1,7 @@
+@Library('jenkins-library-videogame-store')
+
+def deployService = new VideogameServiceDeploy().call()
+def mainService = new VideogameServiceInfrastructure().call()
 def DEPLOY_GKE
 
 pipeline {
@@ -13,47 +17,41 @@ pipeline {
                     BUILD_TRIGGER_BY = currentBuild.getBuildCauses()[0].shortDescription + " / " + currentBuild.getBuildCauses()[0].userId
                     currentBuild.displayName = "Build N° ${currentBuild.number}"
                     currentBuild.description = "${BUILD_TRIGGER_BY}\nBranch_Name : ${params.BRANCH_NAME}\nTag Name : ${params.IMAGE_TAG}"
-                    executeCommand("helm version")
-                    executeCommand("java --version")
-                    executeCommand("mvn -v")
-                    executeCommand("npm version")
+                    mainService.executeCommand("helm version")
+                    mainService.executeCommand("java --version")
+                    mainService.executeCommand("mvn -v")
+                    mainService.executeCommand("npm version")
                     def minikubeStatus = sh(script: "minikube status || true", returnStdout: true).trim()
-                    minikubeStatus.contains("host: Stopped") ? executeCommand("minikube start") : 'Minikube already started'
-                    executeCommand("minikube version")
+                    minikubeStatus.contains("host: Stopped") ? mainService.executeCommand("minikube start") : 'Minikube already started'
+                    mainService.executeCommand("minikube version")
+                    mainService.controlContext("minikube")
                 }
             }
         }
         stage('Clean Previous Install') {
             steps {
                 script {
-                    echo "**** Cleaning old builds with Helm and Docker ****"
-                    def result = sh(script: 'helm list -q | wc -l', returnStdout: true).toString().trim()
-                    result = result.toInteger()
-                    (result > 0) ? executeCommand("helm list -q | xargs -n 1 helm delete") : 'No Helm releases found.'
-                    executeCommand("docker rmi \$(docker images -q dannybatchrun/usersubscription) --force || true")
-                    executeCommand("docker rmi \$(docker images -q dannybatchrun/videogameproducts) --force || true")
-                    executeCommand("docker rmi \$(docker images -q dannybatchrun/videogamestore) --force || true")
-                    echo "**** Docker Images Pruned ****"
-                    def deployments = sh(script: "kubectl get deployments --all-namespaces", returnStdout: true).trim()
-                    !deployments.contains("No resources found") ? executeCommand("kubectl delete deployments --all --all-namespaces") : 'No deployments found'
+                    println "**** Cleaning old builds with Helm and Docker ****"
+                    mainService.cleanLocalInfrastructures()
+                    println "**** Docker Images Pruned ****"
                 }
             }
         }
         stage('Helm Install') {
             steps {
                 script {
-                    echo "**** Creating Three Helm Manifests Empty. It will start in a minute. ****"
+                    println "**** Creating Three Helm Manifests Empty. It will start in a minute. ****"
                     sleep 60
-                    createHelmManifest("usersubscription")
-                    createHelmManifest("videogameproducts")
-                    createHelmManifest("videogamestore")
+                    mainService.createHelmManifest("usersubscription")
+                    mainService.createHelmManifest("videogameproducts")
+                    mainService.createHelmManifest("videogamestore")
                 }
             }
         }
         stage('Build and Push on Docker') {
             steps {
                 script {
-                    echo "*** Pipeline Build in Local is in Running. This Pipeline will continue after finished. ****"
+                    println "*** Pipeline Build in Local is in Running. This Pipeline will continue after finished. ****"
                     build(job: "videogame-store-build-complete", parameters: [
                         string(name: "BRANCH_NAME", value: "${params.BRANCH_NAME}"),
                         string(name: "IMAGE_TAG", value: "${params.IMAGE_TAG}")
@@ -64,7 +62,7 @@ pipeline {
         stage('Replace Images Deployment') {
             steps {
                 script {
-                    echo "*** Pipeline Deploy in Local is in Running. This Pipeline will continue after finished. ****"
+                    println "*** Pipeline Deploy in Local is in Running. This Pipeline will continue after finished. ****"
                     build(job: "videogame-store-deploy-complete", parameters: [
                         string(name: "IMAGE_NAME", value: "usersubscription"),
                         string(name: "IMAGE_VERSION", value: "${params.IMAGE_TAG}"),
@@ -76,8 +74,8 @@ pipeline {
         stage('Test Automation') {
             steps {
                 script {
-                    echo "*** Pipeline Automation Test is in Running. This Pipeline will continue after finished. ***"
-                    echo "*** Waiting Containers for start. Sleep for 5 minutes. ***"
+                    println "*** Pipeline Automation Test is in Running. This Pipeline will continue after finished. ***"
+                    println "*** Waiting Containers for start. Sleep for 5 minutes. ***"
                     build(job: "videogame-store-automation-test-complete", parameters: [
                         booleanParam(name: "USERSUBSCRIPTION_TEST", value: true),
                         booleanParam(name: "VIDEOGAMEPRODUCTS_TEST", value: true),
@@ -92,9 +90,14 @@ pipeline {
                     def userInput = input(id: 'confirm', message: 'Proceed with GKE deploy?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Click yes to proceed', name: 'Yes']])
                     DEPLOY_GKE = userInput
                     if (DEPLOY_GKE) {
-                        echo "**** You Selected Yes. GKE Deploy will start in a minute ****"
+                        println "**** You Selected Yes. GKE Deploy will start in a minute ****"
+                        sleep 60
+                        mainService.controlContext("gke_ethereal-anthem-416313_us-central1_videogame-cluster-gke")
+                        deployService.upgradeHelmDeployment("usersubscription","${params.IMAGE_TAG}","8090")
+                        deployService.upgradeHelmDeployment("videogameproducts","${params.IMAGE_TAG}","8100")
+                        deployService.upgradeHelmDeployment("videogamestore","${params.IMAGE_TAG}","8080")
                     } else {
-                        echo "**** You selected No. Pipeline will complete without GKE deployment. ****"
+                        println "**** You selected No. Pipeline will complete without GKE deployment. ****"
                         currentBuild.result = 'SUCCESS'
                     }
                 }
@@ -104,10 +107,10 @@ pipeline {
     post {
         success {
             script {
-                echo "**** Pipeline SUCCESS ****"
-                def message = DEPLOY_GKE ? "**** GKE Deployment is set to true. Proceeding with deployment. ****" : "**** GKE Deployment is set to false. Aborting deployment. ****"
-                echo message
-                echo "**** Docker Images ****"
+                println "**** Pipeline SUCCESS ****"
+                def messageSuccess = DEPLOY_GKE ? "**** Successfully Deployed on GKE Cluster ****" : "**** Not Deployed on GKE Cluster ****"
+                println messageSuccess
+                println "**** Docker Images ****"
                 sh("docker image ls | grep usersubscription")
                 sh("docker image ls | grep videogameproducts")
                 sh("docker image ls | grep videogamestore")
@@ -118,26 +121,10 @@ pipeline {
         failure {
             script {
                 echo "**** Pipeline FAILURE ****"
+                def messageFailure = DEPLOY_GKE ? "**** Something went wrong during deploy on GKE Cluster ****" : "**** Oops! Something went wrong! Please retry or review your code before launching Pipeline again. ****"
+                println messageFailure
             }
             cleanWs()
         }
-    }
-}
-
-def createHelmManifest(def microservice) {
-    dir("helm-integration/${microservice}") {
-        sh("helm package .")
-        def pkg = sh(script: 'ls *.tgz', returnStdout: true).trim()
-        sh("helm install ${microservice} ./${pkg} --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=1.0.0,service.type=NodePort")
-        sh("helm get manifest ${microservice}")
-    }
-}
-
-def executeCommand(def command) {
-    try {
-        sh(command)
-        echo "${command} command executed successfully"
-    } catch (Exception e) {
-        error("${command} command failed.")
     }
 }
