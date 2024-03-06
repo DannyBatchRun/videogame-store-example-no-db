@@ -33,10 +33,12 @@ def controlContext(def requested) {
 }
 
 def cleanLocalInfrastructures() {
-    def result = sh(script: 'helm list -q | wc -l', returnStdout: true).toString().trim()
-    result = result.toInteger()
-    if (result > 0) {
-        sh("helm list -q | xargs -n 1 helm uninstall")
+    def helmReleases = sh(script: 'helm list --all-namespaces -q', returnStdout: true).trim().split("\n")
+    if (helmReleases.size() > 0) {
+        for (int i = 0; i < helmReleases.size(); i++) {
+            def release = helmReleases[i]
+            sh("helm uninstall ${release} --namespace ${release.split()[1]}")
+        }
     } else {
         println "No Helm releases found."
     }
@@ -49,6 +51,6 @@ def cleanLocalInfrastructures() {
     } else {
         println "No deployments found"
     }
-    sh("kubectl delete namespace usersubscription --ignore-not-found")
 }
+
 
