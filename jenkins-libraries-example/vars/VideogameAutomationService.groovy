@@ -31,7 +31,7 @@ def prepareEndpoints(def microservice) {
 }
 
 def replaceEndpoints(def microservice, def path, def testType, def servicePort) {
-    def apiEndpoint = sh(script: "minikube service ${microservice} --url | head -n 1", returnStdout: true).toString().trim()
+    def apiEndpoint = sh(script: "minikube service ${microservice} --url -n ${microservice} | head -n 1", returnStdout: true).toString().trim()
     dir("${path}/cucumber-auto/${testType}/features/step_definitions") {
         def file = readFile('stepdefs.js')
         def replaced = file.replace("http://localhost:${servicePort}", apiEndpoint)
@@ -39,8 +39,8 @@ def replaceEndpoints(def microservice, def path, def testType, def servicePort) 
     }
     if(microservice.equals("videogamestore")) {
         dir ("store-videogamestore-final-example/cucumber-auto/synchronize") {
-            def urlSubscription = sh(script: 'minikube service usersubscription --url | head -n 1', returnStdout: true).toString().trim()
-            def urlVideogame = sh(script: 'minikube service videogameproducts --url | head -n 1', returnStdout: true).toString().trim()
+            def urlSubscription = sh(script: 'minikube service usersubscription --url -n usersubscription | head -n 1', returnStdout: true).toString().trim()
+            def urlVideogame = sh(script: 'minikube service videogameproducts --url -n videogameproducts | head -n 1', returnStdout: true).toString().trim()
             sh("sed -i 's|ENDPOINT_USERSUBSCRIPTION|'\"${urlSubscription}\"'|g' features/synchronize_all.feature")
             sh("sed -i 's|ENDPOINT_VIDEOGAMEPRODUCTS|'\"${urlVideogame}\"'|g' features/synchronize_all.feature")
         }
