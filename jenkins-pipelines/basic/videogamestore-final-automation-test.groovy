@@ -7,7 +7,7 @@ pipeline {
                 script {
                     sh("git clone https://github.com/DannyBatchRun/videogame-store-example-no-db.git")
                     dir("videogame-store-example-no-db") {
-                        sh("git checkout videogameupgrade")    
+                        sh("git checkout newPipelineIntegration")    
                     }
                 }
             }
@@ -32,18 +32,20 @@ pipeline {
                 }
             }
         }
-        
         stage('Synchronize Databases Test') {
             steps {
                 script {
                     dir("videogame-store-example-no-db/store-videogamestore-final-example/cucumber/synchronize") {
+                        def urlSubscription = sh(script: 'minikube service usersubscription --url -n usersubscription | head -n 1', returnStdout: true).toString().trim()
+                        def urlVideogame = sh(script: 'minikube service videogameproducts --url -n videogameproducts | head -n 1', returnStdout: true).toString().trim()
+                        sh("sed -i 's|ENDPOINT_USERSUBSCRIPTION|'\"${urlSubscription}\"'|g' features/synchronize_all.feature")
+                        sh("sed -i 's|ENDPOINT_VIDEOGAMEPRODUCTS|'\"${urlVideogame}\"'|g' features/synchronize_all.feature")
                         sh("npm test")
                     }
                 }
             }
         }
-        
-        
+
         stage('Videogame to Customer Cart Test') {
             steps {
                 script {
