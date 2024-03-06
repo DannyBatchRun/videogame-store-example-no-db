@@ -114,7 +114,10 @@ pipeline {
                 sh("docker image ls | grep usersubscription")
                 sh("docker image ls | grep videogameproducts")
                 sh("docker image ls | grep videogamestore")
-                sh("helm list --short")
+                println "**** Helm Releases ****"
+                sh("helm list --short -n usersubscription")
+                sh("helm list --short -n videogameproducts")
+                sh("helm list --short -n videogamestore")
             }
             cleanWs()
         }
