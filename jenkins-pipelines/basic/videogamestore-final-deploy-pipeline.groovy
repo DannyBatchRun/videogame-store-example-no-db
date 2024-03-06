@@ -27,20 +27,20 @@ pipeline {
         stage('Replace Image') {
             steps {
                 script {
-                    sh("kubectl scale --replicas=0 deployment/videogamestore")
+                    sh("kubectl scale --replicas=0 deployment/videogamestore -n videogamestore")
                     if(ENABLE_SERVICE_PORT.equals("Yes")) {
-                        sh("helm upgrade videogamestore /home/daniele/videogamestore/. --version ${APP_VERSION} --set image.repository=${IMAGE_REPOSITORY},image.tag=${IMAGE_TAG},image.pullPolicy=Always,service.port=${SERVICE_PORT},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${SERVICE_PORT},readinessProbe.httpGet.path=/health")
+                        sh("helm upgrade videogamestore /home/daniele/videogamestore/. --version ${APP_VERSION} --set image.repository=${IMAGE_REPOSITORY},image.tag=${IMAGE_TAG},image.pullPolicy=Always,service.port=${SERVICE_PORT},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${SERVICE_PORT},readinessProbe.httpGet.path=/health -n videogamestore")
                     } else if (ENABLE_SERVICE_PORT.equals("No")) {
-                        sh("helm upgrade videogamestore /home/daniele/videogamestore/. --version ${APP_VERSION} --set image.repository=${IMAGE_REPOSITORY},image.tag=${IMAGE_TAG},image.pullPolicy=Always,livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=80,readinessProbe.httpGet.path=/health")
+                        sh("helm upgrade videogamestore /home/daniele/videogamestore/. --version ${APP_VERSION} --set image.repository=${IMAGE_REPOSITORY},image.tag=${IMAGE_TAG},image.pullPolicy=Always,livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=80,readinessProbe.httpGet.path=/health -n videogamestore")
                     }
-                    sh("kubectl scale --replicas=1 deployment/videogamestore")
+                    sh("kubectl scale --replicas=1 deployment/videogamestore -n videogamestore")
                 } 
             }
         }
         stage('Check Pods') {
             steps {
                 script {
-                    sh("kubectl get pods -n default")
+                    sh("kubectl get pods -n videogamestore")
                 } 
             }
         }
