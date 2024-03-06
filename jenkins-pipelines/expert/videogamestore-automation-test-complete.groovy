@@ -10,17 +10,14 @@ pipeline {
         booleanParam(name: 'VIDEOGAMESTORE_TEST', description: "Spunta questa casella se vuoi testare l'applicazione Videogamestore. ATTENZIONE! Se selezionato, verranno lanciati anche i test di UserSubscription e VideogameStore.")
     }
     stages {
-        stage('Initialization') {
+        stage('VideogameStore Check') {
             steps {
                 script {
                     if (params.VIDEOGAMESTORE_TEST && (!params.USERSUBSCRIPTION_TEST || !params.VIDEOGAMEPRODUCTS_TEST)) {
                         USERSUBSCRIPTION_TEST = true
                         VIDEOGAMEPRODUCTS_TEST = true
                     }
-                    echo "**** FORWARDING MICROSERVICES IN PROGRESS ****"
-                    service.forwardKubernetesPort("usersubscription","open")
-                    service.forwardKubernetesPort("videogameproducts","open")
-                    service.forwardKubernetesPort("videogamestore","open")
+                    sleep 300
                     echo "**** CHECK VERSION OF NPM ****"
                     sh("npm version")
                 }
@@ -34,12 +31,13 @@ pipeline {
             }
             steps {
                 script {
+                    service.prepareEndpoints("usersubscription")
                     service.installDependenciesNodeJs("usersubscription")
-                    echo "** ADDING FOUR USERS FOR A SUBSCRIPTION MONHLY ** SLEEP FOR 2 MINUTES"
-                    sleep 120
+                    echo "** ADDING FOUR USERS FOR A SUBSCRIPTION MONHLY ** SLEEP FOR 20 SECONDS"
+                    sleep 20
                     service.runTestCucumber("usersubscription", "postrequestmonthly")
-                    echo "** ADDING FOUR USERS FOR A SUBSCRIPTION ANNUAL ** SLEEP FOR 2 MINUTES"
-                    sleep 120
+                    echo "** ADDING FOUR USERS FOR A SUBSCRIPTION ANNUAL ** SLEEP FOR 20 SECONDS"
+                    sleep 20
                     service.runTestCucumber("usersubscription", "postrequestannual")
                     service.runTestCucumber("usersubscription", "getrequest")
                 }
@@ -53,10 +51,11 @@ pipeline {
             }
             steps {
                 script {
+                    service.prepareEndpoints("videogameproducts")
                     service.installDependenciesNodeJs("videogameproducts")
                     service.runTestCucumber("videogameproducts", "postrequest")
-                    echo "*** PRODUCT ID TO BE DELETED : 1 *** SLEEP FOR 2 MINUTES"
-                    sleep 120
+                    echo "*** PRODUCT ID TO BE DELETED : 1 *** SLEEP FOR 20 SECONDS"
+                    sleep 20
                     service.runTestCucumber("videogameproducts", "deleterequest")
                     service.runTestCucumber("videogameproducts", "getrequest")
                 }
@@ -70,12 +69,13 @@ pipeline {
             }
             steps {
                 script {
+                    service.prepareEndpoints("videogamestore")
                     service.installDependenciesNodeJs("videogamestore")
                     echo "*** SYNCRONIZING DATABASES OF USERSUBSCRIPTION AND VIDEOGAMEPRODUCTS ***"
                     service.runTestCucumber("videogamestore", "synchronize")
                     service.runTestCucumber("videogamestore", "postrequest")
-                    echo "*** WAITING FOR TWO MINUTES AFTER SEND GETREQUEST TEST ***"
-                    sleep 120
+                    echo "*** WAITING FOR 20 SECONDS AFTER SEND GETREQUEST TEST ***"
+                    sleep 20
                     service.runTestCucumber("videogamestore", "getrequest")
                 }
             }
@@ -86,18 +86,13 @@ pipeline {
         success {
             script {
                 echo "Pipeline Success"
-                params.USERSUBSCRIPTION_TEST ? service.forwardKubernetesPort("usersubscription", "close") : null
-                params.VIDEOGAMEPRODUCTS_TEST ? service.forwardKubernetesPort("videogameproducts", "close") : null
-                params.VIDEOGAMESTORE_TEST ? service.forwardKubernetesPort("videogamestore", "close") : null
             }
             cleanWs()
         }
         failure {
             script {
                 echo "Pipeline Failure"
-                params.USERSUBSCRIPTION_TEST ? service.forwardKubernetesPort("usersubscription", "close") : null
-                params.VIDEOGAMEPRODUCTS_TEST ? service.forwardKubernetesPort("videogameproducts", "close") : null
-                params.VIDEOGAMESTORE_TEST ? service.forwardKubernetesPort("videogamestore", "close") : null
+                sh("minikube stop")
             }
             cleanWs()
         }

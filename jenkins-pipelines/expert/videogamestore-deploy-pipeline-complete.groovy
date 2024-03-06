@@ -33,7 +33,7 @@ pipeline {
                     if(!params.DEPLOY_ALL) {
                         deployService.upgradeHelmDeployment("${params.IMAGE_NAME}","${params.IMAGE_VERSION}","${SERVICE_PORT}")
                     } else if (params.DEPLOY_ALL) {
-                        deployService.upgradeHelmDeployment("usersubscription","${params.IMAGE_VERSION}","8081")
+                        deployService.upgradeHelmDeployment("usersubscription","${params.IMAGE_VERSION}","8090")
                         deployService.upgradeHelmDeployment("videogameproducts","${params.IMAGE_VERSION}","8100")
                         deployService.upgradeHelmDeployment("videogamestore","${params.IMAGE_VERSION}","8080")
                     }
@@ -43,7 +43,13 @@ pipeline {
         stage('Check Pods') {
             steps {
                 script {
-                    sh("kubectl get pods -n default")
+                    if(!params.DEPLOY_ALL) {
+                        sh("kubectl get pods -n ${params.IMAGE_NAME}")
+                    } else if (params.DEPLOY_ALL) {
+                        sh("kubectl get pods -n usersubscription")
+                        sh("kubectl get pods -n videogameproducts")
+                        sh("kubectl get pods -n videogamestore")
+                    }
                 } 
             }
         }

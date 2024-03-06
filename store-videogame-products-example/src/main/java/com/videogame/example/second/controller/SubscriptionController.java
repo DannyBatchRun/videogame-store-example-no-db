@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import com.videogame.example.second.model.Videogame;
 
 import java.util.*;
@@ -29,7 +30,8 @@ public class SubscriptionController {
 	public ResponseEntity<String> checkStatus() {
 		return new ResponseEntity<>("Service is up and running", HttpStatus.OK);
 	}
-	
+
+	@CrossOrigin(origins = "http://localhost:8080")
 	@GetMapping("/videogames") 
 	public List<Videogame> getVideogames() {
 		return videogamesList;

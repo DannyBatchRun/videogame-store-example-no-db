@@ -4,15 +4,19 @@ const pactum = require('pactum');
 const assert = require('assert').strict;
 
 let apiEndpoint;
+let requestBody;
 let response;
 
 setDefaultTimeout(60 * 1000);
 
-Given('I set GET service api endpoint', function () {
+Given('I set POST service api endpoint', function () {
   apiEndpoint = 'http://localhost:8080/synchronize';
 });
 
-Then('send a GET HTTP request', {timeout: 120 * 1000}, async function () {
-    response = await axios.get(apiEndpoint);
-    console.log(response);
+When('set request BODY with following details:', function (dataTable) {
+  requestBody = dataTable.rowsHash();
+});
+
+Then('send a POST HTTP request', {timeout: 120 * 1000}, async function () {
+  response = await axios.post(apiEndpoint, requestBody);
 });

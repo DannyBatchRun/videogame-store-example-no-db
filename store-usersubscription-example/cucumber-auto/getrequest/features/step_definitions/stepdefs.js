@@ -9,7 +9,7 @@ let response;
 setDefaultTimeout(60 * 1000);
 
 Given('I set GET service api endpoint', function () {
-  apiEndpoint = 'http://localhost:8081/registered';
+  apiEndpoint = 'http://localhost:8090/registered';
 });
 
 Then('send a GET HTTP request', {timeout: 120 * 1000}, async function () {
