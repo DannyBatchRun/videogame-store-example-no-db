@@ -36,7 +36,7 @@ def cleanLocalInfrastructures() {
     def result = sh(script: 'helm list -q | wc -l', returnStdout: true).toString().trim()
     result = result.toInteger()
     if (result > 0) {
-        sh("helm list -q | xargs -n 1 helm delete")
+        sh("helm list -q | xargs -n 1 helm uninstall")
     } else {
         println "No Helm releases found."
     }
