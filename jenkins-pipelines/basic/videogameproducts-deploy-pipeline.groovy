@@ -40,7 +40,7 @@ pipeline {
         stage('Check Pods') {
             steps {
                 script {
-                    sh("kubectl get pods -n default")
+                    sh("kubectl get pods -n videogamestore")
                 } 
             }
         }
