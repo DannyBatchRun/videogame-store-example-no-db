@@ -8,7 +8,7 @@ def createHelmManifest(def microservice) {
     dir("helm-integration/${microservice}") {
         sh("helm package .")
         def pkg = sh(script: 'ls *.tgz', returnStdout: true).trim()
-        sh("helm install ${microservice} ./${pkg} --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=1.0.0,service.type=NodePort")
+        sh("helm install ${microservice} ./${pkg} --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=1.0.0,service.type=NodePort -n ${microservice}")
         sh("helm get manifest ${microservice}")
     }
 }
