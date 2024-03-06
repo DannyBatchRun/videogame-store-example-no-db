@@ -3,6 +3,7 @@
 def deployService = new VideogameServiceDeploy().call()
 def mainService = new VideogameServiceInfrastructure().call()
 def DEPLOY_GKE
+def SKIP_AUTOMATION
 
 pipeline {
     agent any
@@ -76,11 +77,23 @@ pipeline {
                 script {
                     println "*** Pipeline Automation Test is in Running. This Pipeline will continue after finished. ***"
                     println "*** Waiting Containers for start. Sleep for 5 minutes. ***"
-                    build(job: "videogame-store-automation-test-complete", parameters: [
-                        booleanParam(name: "USERSUBSCRIPTION_TEST", value: true),
-                        booleanParam(name: "VIDEOGAMEPRODUCTS_TEST", value: true),
-                        booleanParam(name: "VIDEOGAMESTORE_TEST", value: true)
-                    ], wait: true)                    
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        build(job: "videogame-store-automation-test-complete", parameters: [
+                            booleanParam(name: "USERSUBSCRIPTION_TEST", value: true),
+                            booleanParam(name: "VIDEOGAMEPRODUCTS_TEST", value: true),
+                            booleanParam(name: "VIDEOGAMESTORE_TEST", value: true)
+                        ], wait: true)
+                    }
+                    if (currentBuild.result == 'UNSTABLE') {
+                        def testInput = input(id: 'confirm', message: 'Pipeline is unable to perform test automation. Can you proceed anyway?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Click yes to proceed', name: 'Yes']])
+                        if (!testInput) {
+                            println "**** You selected No. Pipeline will complete without Test Automation. ****"
+                            currentBuild.result = 'UNSTABLE'
+                        } else {
+                            println "**** You Selected Yes. Pipeline will continue. Please check if the application is running as expected. ****"
+                            sleep 60
+                        }
+                    }
                 }
             }
         }
@@ -114,10 +127,7 @@ pipeline {
                 sh("docker image ls | grep usersubscription")
                 sh("docker image ls | grep videogameproducts")
                 sh("docker image ls | grep videogamestore")
-                println "**** Helm Releases ****"
-                sh("helm list --short -n usersubscription")
-                sh("helm list --short -n videogameproducts")
-                sh("helm list --short -n videogamestore")
+                sh("helm list --short")
             }
             cleanWs()
         }
