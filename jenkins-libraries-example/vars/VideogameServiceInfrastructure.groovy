@@ -49,4 +49,6 @@ def cleanLocalInfrastructures() {
     } else {
         println "No deployments found"
     }
+    sh("kubectl delete namespace usersubscription --ignore-not-found")
 }
+
