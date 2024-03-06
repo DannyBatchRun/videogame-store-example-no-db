@@ -1,3 +1,8 @@
+def call() {
+    println "VideogameServiceInfrastructure initialized"
+    return this;
+}
+
 def createHelmManifest(def microservice) {
     sh("kubectl create namespace ${microservice} || true")
     dir("helm-integration/${microservice}") {
