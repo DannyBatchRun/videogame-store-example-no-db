@@ -27,13 +27,13 @@ pipeline {
         stage('Replace Image') {
             steps {
                 script {
-                    sh("kubectl scale --replicas=0 deployment/videogameproducts")
+                    sh("kubectl scale --replicas=0 deployment/videogameproducts -n videogameproducts")
                     if(ENABLE_SERVICE_PORT.equals("Yes")) {
-                        sh("helm upgrade videogameproducts ~/videogameproducts/. --version ${APP_VERSION} --set image.repository=${IMAGE_REPOSITORY},image.tag=${IMAGE_TAG},image.pullPolicy=Always,service.port=${SERVICE_PORT},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${SERVICE_PORT},readinessProbe.httpGet.path=/health")
+                        sh("helm upgrade videogameproducts ~/videogameproducts/. --version ${APP_VERSION} --set image.repository=${IMAGE_REPOSITORY},image.tag=${IMAGE_TAG},image.pullPolicy=Always,service.port=${SERVICE_PORT},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${SERVICE_PORT},readinessProbe.httpGet.path=/health -n videogameproducts")
                     } else if (ENABLE_SERVICE_PORT.equals("No")) {
-                        sh("helm upgrade videogameproducts ~/videogameproducts/. --version ${APP_VERSION} --set image.repository=${IMAGE_REPOSITORY},image.tag=${IMAGE_TAG},image.pullPolicy=Always,livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=80,readinessProbe.httpGet.path=/health")
+                        sh("helm upgrade videogameproducts ~/videogameproducts/. --version ${APP_VERSION} --set image.repository=${IMAGE_REPOSITORY},image.tag=${IMAGE_TAG},image.pullPolicy=Always,livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=80,readinessProbe.httpGet.path=/health -n videogameproducts")
                     }
-                    sh("kubectl scale --replicas=1 deployment/videogameproducts")
+                    sh("kubectl scale --replicas=1 deployment/videogameproducts -n videogameproducts")
                 } 
             }
         }
