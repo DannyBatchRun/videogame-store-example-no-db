@@ -81,8 +81,18 @@ def runTestCucumber(def microservice, def testType) {
         break
     }
     println "*** RUNNING TEST ${microservice.toUpperCase()} : ${testType.toUpperCase()} ***"
-    dir ("${path}/cucumber-auto/${testType}") {
-        sh("npm test")
+    try {
+        dir ("${path}/cucumber-auto/${testType}") {
+            sh("npm test")
+        }
+    } catch (Exception e) {
+        if (e.message.contains('ECONNREFUSED')) {
+            currentBuild.result = 'UNSTABLE'
+            println "**** Unable to connect to the service. Please retry deploy process and re-launch Test automation. ***"
+        } else {
+            println "Caught exception: ${e}"
+            currentBuild.result = 'FAILURE'
+        }
     }
     println "*** ${microservice.toUpperCase()} : ${testType.toUpperCase()} COMPLETED SUCCESSFULLY ***"
 }
