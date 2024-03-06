@@ -43,7 +43,13 @@ pipeline {
         stage('Check Pods') {
             steps {
                 script {
-                    sh("kubectl get pods -n default")
+                    if(!params.DEPLOY_ALL) {
+                        sh("kubectl get pods -n ${params.IMAGE_NAME}")
+                    } else if (params.DEPLOY_ALL) {
+                        sh("kubectl get pods -n usersubscription")
+                        sh("kubectl get pods -n videogameproducts")
+                        sh("kubectl get pods -n videogamestore")
+                    }
                 } 
             }
         }
