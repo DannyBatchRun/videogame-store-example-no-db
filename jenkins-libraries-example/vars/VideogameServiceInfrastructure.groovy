@@ -1,4 +1,5 @@
 def createHelmManifest(def microservice) {
+    sh("kubectl create namespace ${microservice} || true")
     dir("helm-integration/${microservice}") {
         sh("helm package .")
         def pkg = sh(script: 'ls *.tgz', returnStdout: true).trim()
