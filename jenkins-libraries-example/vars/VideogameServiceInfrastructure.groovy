@@ -33,15 +33,11 @@ def controlContext(def requested) {
 }
 
 def cleanLocalInfrastructures() {
-    def helmReleases = sh(script: 'helm list --all-namespaces -q', returnStdout: true).trim().split("\n")
-    if (helmReleases.size() > 0) {
-        for (int i = 0; i < helmReleases.size(); i++) {
-            def release = helmReleases[i]
-            sh("helm uninstall ${release} --namespace ${release.split()[1]}")
-        }
-    } else {
-        println "No Helm releases found."
-    }
+    println "**** Deleting Helm Manifests ****"
+    sh("helm uninstall usersubscription -n usersubscription || true")
+    sh("helm uninstall videogameproducts -n videogameproducts || true")
+    sh("helm uninstall videogamestore -n videogamestore || true")
+    println "**** Deleting Docker Images ****"
     sh("docker rmi \$(docker images -q dannybatchrun/usersubscription) --force || true")
     sh("docker rmi \$(docker images -q dannybatchrun/videogameproducts) --force || true")
     sh("docker rmi \$(docker images -q dannybatchrun/videogamestore) --force || true")
