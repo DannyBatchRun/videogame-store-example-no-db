@@ -29,15 +29,29 @@ def installOrUpgradeHelmManifest(def microservice, def imageTag, def servicePort
         sh("helm package .")
         if(!isPresent) {
             def pkg = sh(script: 'ls *.tgz', returnStdout: true).trim()
-            sh("helm install ${microservice} ./${pkg} --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort},service.type=LoadBalancer,service.externalTrafficPolicy=Local -n ${microservice}")
-        } else if (isPresent) {
-            def chartVersion = imageTag
-            sh("sed -i 's/^version: 0.1.0/version: '\"${chartVersion}\"'/' Chart.yaml")
-            chartVersion = chartVersion.replaceAll(/[^0-9.]/, '')
-            sh("kubectl scale --replicas=0 deployment/${microservice} -n ${microservice}")
-            sh("helm upgrade ${microservice} . --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort},service.type=LoadBalancer,service.externalTrafficPolicy=Local -n ${microservice}")
-            sh("kubectl scale --replicas=1 deployment/${microservice} -n ${microservice}")
-        }
+            helm install ${microservice} ./${pkg} --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort},service.type=LoadBalancer,service.externalTrafficPolicy=Local -n ${microservice}
+            if [ "$(kubectl get pod -l app=${microservice} -n ${microservice} -o jsonpath='{.items[*].status.phase}')" == "Running" ]; then
+                echo "Pod is running"
+            else
+                echo "Pod is not running. Fetching logs and events..."
+                kubectl logs $(kubectl get pod -l app=${microservice} -n ${microservice} -o jsonpath='{.items[*].metadata.name}') -n ${microservice}
+                kubectl describe pod $(kubectl get pod -l app=${microservice} -n ${microservice} -o jsonpath='{.items[*].metadata.name}') -n ${microservice}
+            fi        
+            } else if (isPresent) {
+                def chartVersion = imageTag
+                sh("sed -i 's/^version: 0.1.0/version: '\"${chartVersion}\"'/' Chart.yaml")
+                chartVersion = chartVersion.replaceAll(/[^0-9.]/, '')
+                sh("kubectl scale --replicas=0 deployment/${microservice} -n ${microservice}")
+                sh("helm upgrade ${microservice} . --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort},service.type=LoadBalancer,service.externalTrafficPolicy=Local -n ${microservice}")
+                sh("kubectl scale --replicas=1 deployment/${imageName} -n ${imageName}")
+                if [ "$(kubectl get pod -l app=${microservice} -n ${microservice} -o jsonpath='{.items[*].status.phase}')" == "Running" ]; then
+                    echo "Pod is running"
+                else
+                    echo "Pod is not running. Fetching logs and events..."
+                    kubectl logs $(kubectl get pod -l app=${microservice} -n ${microservice} -o jsonpath='{.items[*].metadata.name}') -n ${microservice}
+                    kubectl describe pod $(kubectl get pod -l app=${microservice} -n ${microservice} -o jsonpath='{.items[*].metadata.name}') -n ${microservice}
+                fi
+            }
     }
 }
 
