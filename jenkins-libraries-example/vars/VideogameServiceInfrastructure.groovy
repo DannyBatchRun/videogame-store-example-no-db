@@ -29,33 +29,18 @@ def installOrUpgradeHelmManifest(def microservice, def imageTag, def servicePort
         sh("helm package .")
         if(!isPresent) {
             def pkg = sh(script: 'ls *.tgz', returnStdout: true).trim()
-                sh("helm install ${microservice} ./${pkg} --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort},service.type=LoadBalancer,service.externalTrafficPolicy=Local -n ${microservice}")  
-            def status = sh(script: "kubectl get pod -l app=${microservice} -n ${microservice} -o jsonpath='{.items[*].status.phase}'", returnStatus: true)
-            if (status == "Running") {
-                echo "Pod is running"
-            } else {
-                echo "Pod is not running. Fetching logs and events..."
-                sh "kubectl logs \$(kubectl get pod -l app=${microservice} -n ${microservice} -o jsonpath='{.items[*].metadata.name}') -n ${microservice}"
-                sh "kubectl describe pod \$(kubectl get pod -l app=${microservice} -n ${microservice} -o jsonpath='{.items[*].metadata.name}') -n ${microservice}"
-              }
-            } else if (isPresent) {
-                def chartVersion = imageTag
-                sh("sed -i 's/^version: 0.1.0/version: '\"${chartVersion}\"'/' Chart.yaml")
-                chartVersion = chartVersion.replaceAll(/[^0-9.]/, '')
-                sh("kubectl scale --replicas=0 deployment/${microservice} -n ${microservice}")
-                sh("helm upgrade ${microservice} . --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort},service.type=LoadBalancer,service.externalTrafficPolicy=Local -n ${microservice}")
-                sh("kubectl scale --replicas=1 deployment/${imageName} -n ${imageName}")
-                def status = sh(script: "kubectl get pod -l app=${microservice} -n ${microservice} -o jsonpath='{.items[*].status.phase}'", returnStatus: true)
-                if (status == "Running") {
-                echo "Pod is running"
-                } else {
-                    echo "Pod is not running. Fetching logs and events..."
-                    sh "kubectl logs \$(kubectl get pod -l app=${microservice} -n ${microservice} -o jsonpath='{.items[*].metadata.name}') -n ${microservice}"
-                    sh "kubectl describe pod \$(kubectl get pod -l app=${microservice} -n ${microservice} -o jsonpath='{.items[*].metadata.name}') -n ${microservice}"
-                }
-            }    
+            sh("helm install ${microservice} ./${pkg} --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort},service.type=NodePort -n ${microservice}")
+        } else if (isPresent) {
+            def chartVersion = imageTag
+            sh("sed -i 's/^version: 0.1.0/version: '\"${chartVersion}\"'/' Chart.yaml")
+            chartVersion = chartVersion.replaceAll(/[^0-9.]/, '')
+            sh("kubectl scale --replicas=0 deployment/${microservice} -n ${microservice}")
+            sh("helm upgrade ${microservice} . --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort},service.type=NodePort -n ${microservice}")
+            sh("kubectl scale --replicas=1 deployment/${microservice} -n ${microservice}")
+        }
     }
 }
+
 
 def controlContext(def requested) {
     def currentContext = sh(script: 'kubectl config current-context', returnStdout: true).trim()
