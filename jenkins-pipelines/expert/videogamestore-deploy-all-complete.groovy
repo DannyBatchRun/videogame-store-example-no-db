@@ -3,7 +3,6 @@
 def deployService = new VideogameServiceDeploy().call()
 def mainService = new VideogameServiceInfrastructure().call()
 def DEPLOY_GKE
-def SKIP_AUTOMATION
 
 pipeline {
     agent any
@@ -87,7 +86,7 @@ pipeline {
                     if (currentBuild.result == 'UNSTABLE') {
                         def testInput = input(id: 'confirm', message: 'Pipeline is unable to perform test automation. Can you proceed anyway?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Click yes to proceed', name: 'Yes']])
                         if (!testInput) {
-                            println "**** You selected No. Pipeline will complete without Test Automation. ****"
+                            println "**** You selected No. Pipeline will not proceed. ****"
                             currentBuild.result = 'UNSTABLE'
                         } else {
                             println "**** You Selected Yes. Pipeline will continue. Please check if the application is running as expected. ****"
@@ -106,9 +105,9 @@ pipeline {
                         println "**** You Selected Yes. GKE Deploy will start in a minute ****"
                         sleep 60
                         mainService.controlContext("gke_ethereal-anthem-416313_us-central1_videogame-cluster-gke")
-                        deployService.upgradeHelmDeployment("usersubscription","${params.IMAGE_TAG}","8090")
-                        deployService.upgradeHelmDeployment("videogameproducts","${params.IMAGE_TAG}","8100")
-                        deployService.upgradeHelmDeployment("videogamestore","${params.IMAGE_TAG}","8080")
+                        mainService.installOrUpgradeHelmManifest("usersubscription","${params.IMAGE_TAG}","8090")
+                        mainService.installOrUpgradeHelmManifest("videogameproducts","${params.IMAGE_TAG}","8100")
+                        mainService.installOrUpgradeHelmManifest("videogamestore","${params.IMAGE_TAG}","8080")
                     } else {
                         println "**** You selected No. Pipeline will complete without GKE deployment. ****"
                         currentBuild.result = 'SUCCESS'
@@ -133,11 +132,17 @@ pipeline {
         }
         failure {
             script {
-                echo "**** Pipeline FAILURE ****"
+                println "**** Pipeline FAILURE ****"
                 def messageFailure = DEPLOY_GKE ? "**** Something went wrong during deploy on GKE Cluster ****" : "**** Oops! Something went wrong! Please retry or review your code before launching Pipeline again. ****"
                 println messageFailure
             }
             cleanWs()
+        }
+        unstable {
+            script {
+                println "**** Pipeline UNSTABLE ****"
+                println "**** Cucumber is not able to communicate with service endpoint. There is an issue with your instance of Minikube installed ****"
+            }
         }
     }
 }
