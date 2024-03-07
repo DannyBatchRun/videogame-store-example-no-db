@@ -29,7 +29,7 @@ def installOrUpgradeHelmManifest(def microservice, def imageTag, def servicePort
         sh("helm package .")
         if(!isPresent) {
             def pkg = sh(script: 'ls *.tgz', returnStdout: true).trim()
-            helm install ${microservice} ./${pkg} --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort},service.type=LoadBalancer,service.externalTrafficPolicy=Local -n ${microservice}
+                sh("helm install ${microservice} ./${pkg} --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort},service.type=LoadBalancer,service.externalTrafficPolicy=Local -n ${microservice}")  
             if [ "$(kubectl get pod -l app=${microservice} -n ${microservice} -o jsonpath='{.items[*].status.phase}')" == "Running" ]; then
                 echo "Pod is running"
             else
