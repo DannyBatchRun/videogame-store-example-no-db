@@ -45,7 +45,8 @@ public class VideogameController {
         String fullSubscription = endpoints.get("subscriptionEndpoint") + "/registered";
         String fullVideogame = endpoints.get("videogameEndpoint") + "/videogames";
         Videogame[] videogameArray = restTemplate.getForObject(fullVideogame, Videogame[].class);
-        Client[] clientArray = restTemplate.getForObject(fullSubscription, Client[].class);        if (videogameArray != null) {
+        Client[] clientArray = restTemplate.getForObject(fullSubscription, Client[].class);
+        if (videogameArray != null) {
             for (Videogame newVideogame : videogameArray) {
                 boolean exists = false;
                 for (Videogame existingVideogame : videogames) {
