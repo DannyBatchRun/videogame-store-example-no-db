@@ -140,6 +140,7 @@ pipeline {
                     sh("rm config.json || true")
                 }
             cleanWs()
+            }
         }
         unstable {
             script {
