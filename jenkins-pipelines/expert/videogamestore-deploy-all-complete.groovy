@@ -1,6 +1,5 @@
 @Library('jenkins-library-videogame-store')
 
-def deployService = new VideogameServiceDeploy().call()
 def mainService = new VideogameServiceInfrastructure().call()
 def DEPLOY_GKE
 
