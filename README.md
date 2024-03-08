@@ -1,5 +1,5 @@
 # videogame-store-example-no-db
-This Project have a full infrastructure of example based on a simple automation with three microservices based on Spring API Rest.<br />
+This Project have a full infrastructure of example based on a simple automation with three microservices based on Spring API Rest. There are no databases but just with ArrayList for an example.<br />
 # Spring API Rest Microservices
 <strong>UserSubscription</strong> ---> Add an existing client on a Monthly or Annual Subscription.<br />
 <strong>VideoGameProducts</strong> ---> Add Videogames or Remove Existing Products<br />
