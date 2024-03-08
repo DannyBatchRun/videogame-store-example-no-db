@@ -145,7 +145,16 @@ pipeline {
         unstable {
             script {
                 println "**** Pipeline UNSTABLE ****"
-                println "**** Cucumber is not able to communicate with service endpoint. There is an issue with your instance of Minikube installed ****"
+                if (currentBuild.currentResult == 'UNSTABLE' && currentBuild.getStageName() == 'Build and Push on Docker') {
+                    println "**** Certificate signed by unknown authority. Please re-launch pipeline again to retry Docker operations ****"
+                    dir("/home/daniele/.docker") {
+                        sh("rm config.json || true")
+                    }
+                } else if (currentBuild.currentResult == 'UNSTABLE' && currentBuild.getStageName() == 'Test Automation') {
+                    println "**** Cucumber is not able to communicate with service endpoint. There is an issue with your instance of Minikube installed ****"
+                } else {
+                    println "**** Pipeline is UNSTABLE for a generic error. Please check the Console Output to troubleshoot ****"
+                }
             }
         }
     }
