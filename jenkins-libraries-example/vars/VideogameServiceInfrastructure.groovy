@@ -29,7 +29,8 @@ def installOrUpgradeHelmManifest(def microservice, def imageTag, def servicePort
         sh("helm package .")
         if(!isPresent) {
             def pkg = sh(script: 'ls *.tgz', returnStdout: true).trim()
-            sh("helm install ${microservice} ./${pkg} --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort},livenessProbe.initialDelaySeconds=30,readinessProbe.httpGet.path=/health,readinessProbe.httpGet.port=${servicePort},readinessProbe.initialDelaySeconds=30,service.type=LoadBalancer -n ${microservice}")        } else if (isPresent) {
+            sh("helm install ${microservice} ./${pkg} --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort},livenessProbe.initialDelaySeconds=30,readinessProbe.httpGet.path=/health,readinessProbe.httpGet.port=${servicePort},readinessProbe.initialDelaySeconds=30,service.type=LoadBalancer -n ${microservice}")        
+        } else if (isPresent) {
             def chartVersion = imageTag
             sh("sed -i 's/^version: 0.1.0/version: '\"${chartVersion}\"'/' Chart.yaml")
             chartVersion = chartVersion.replaceAll(/[^0-9.]/, '')
@@ -37,6 +38,9 @@ def installOrUpgradeHelmManifest(def microservice, def imageTag, def servicePort
             sh("helm upgrade ${microservice} . --set image.repository=index.docker.io/dannybatchrun/${microservice},image.tag=${imageTag},image.pullPolicy=Always,service.port=${servicePort},livenessProbe.httpGet.path=/health,livenessProbe.httpGet.port=${servicePort},livenessProbe.initialDelaySeconds=30,readinessProbe.httpGet.path=/health,readinessProbe.httpGet.port=${servicePort},readinessProbe.initialDelaySeconds=30,service.type=LoadBalancer -n ${microservice}")
             sh("kubectl scale --replicas=1 deployment/${microservice} -n ${microservice}")
         }
+        def networkPolicyExists = sh(script: "kubectl get networkpolicy allow-all -n ${microservice} --ignore-not-found || true", returnStdout: true).trim()
+        def command = networkPolicyExists ? "echo 'NetworkPolicy allow-all already exists in namespace ${microservice}'" : "kubectl apply -f networkpolicy.yaml -n ${microservice}"
+        sh(script: command)
     }
 }
 
