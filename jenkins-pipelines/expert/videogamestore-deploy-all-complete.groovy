@@ -135,7 +135,9 @@ pipeline {
                 println "**** Pipeline FAILURE ****"
                 def messageFailure = DEPLOY_GKE ? "**** Something went wrong during deploy on GKE Cluster ****" : "**** Oops! Something went wrong! Please retry or review your code before launching Pipeline again. ****"
                 println messageFailure
-            }
+                dir("/home/daniele/.docker") {
+                    sh("rm config.json || true")
+                }
             cleanWs()
         }
         unstable {
