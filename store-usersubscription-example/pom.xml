@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.videogame.example</groupId>
 	<artifactId>first</artifactId>
-	<version>3.1.3-fixGeneric-SNAPSHOT</version>
+	<version>3.1.3-SNAPSHOT</version>
 	<name>videogame-example-first</name>
 	<description>Esempio di un ECommerce di Videogiochi</description>
 	<properties>
