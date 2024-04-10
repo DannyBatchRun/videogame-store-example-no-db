@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.videogame.example</groupId>
-	<artifactId>third</artifactId>
+	<artifactId>second</artifactId>
 	<version>3.0.0</version>
-	<name>videogame-example-third</name>
-	<description>Esempio di un attività di videogiochi completa</description>
+	<name>videogame-example-second</name>
+	<description>Esempio di un ECommerce di Videogiochi - Secondo Microservizio</description>
 	<properties>
 		<java.version>21</java.version>
 	</properties>
@@ -21,6 +21,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -48,13 +49,20 @@
 			<artifactId>logback-classic</artifactId>
 		</dependency>
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>com.amashchenko.maven.plugin</groupId>
+				<artifactId>gitflow-maven-plugin</artifactId>
+				<version>1.21.0</version>
+			</plugin>
 		</plugins>
 		<finalName>videogamestore</finalName>
 	</build>
+
 </project>
