@@ -18,8 +18,8 @@ Is not required any MySQL Database or similar. This is a fake database based on 
 File Name : <strong>jenkins-pipelines/expert/videogamestore-deploy-all-complete.groovy</strong>
 Required Packages to Install : <strong>Java 21, Maven, NodeJS, Helm, Minikube and Kubectl (KubernetesCli) installed.</strong>< /br>
 This pipeline is able to build a complete infrastructure based first on Minikube, then it performs a Test Automation with Cucumber Automatically with Scenario Outline and in the end, you can choose to deploy all this in a Cluster GKE.<br />
-If you want to test this code, you make sure that all parameters of authentication with its passwords including Cluster, matching with yours. Then otherwise, Pipeline will get a failure status.< br/>
-- <strong>Pipeline Call Part</strong> : This pipeline will call all pipelines attached specified in the groovy. You must create a new pipeline that matches the same name specified in this groovy file.< br/>
+If you want to test this code, you make sure that all parameters of authentication with its passwords including Cluster, matching with yours. Then otherwise, Pipeline will get a failure status.<br />
+- <strong>Pipeline Call Part</strong> : This pipeline will call all pipelines attached specified in the groovy. You must create a new pipeline that matches the same name specified in this groovy file.<br />
 - <strong>Credentials Part</strong> : You can configure it in <strong>Credentials</strong> ---> <strong>Global</strong> ---> <strong>Secret Text</strong>, with the same name specified in the code logic.<br />
 - <strong>GKE Cluster Part</strong> : This pipeline manage a Deploy in Google Kubernetes Engine (GKE). You must authenticate it into your cluster in local and then replace it into the pipeline groovy.<br />
 - <strong>Jenkins Libraries Integration</strong> : You can configure it on <strong>Jenkins</strong> ---> <strong>Configure System</strong> in Library Section. You must put the repository with its branch and it must respect the same folders you specified with path /vars.<br />
