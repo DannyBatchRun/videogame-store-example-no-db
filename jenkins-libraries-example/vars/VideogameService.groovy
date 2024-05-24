@@ -18,7 +18,7 @@ def copyWorkspace(def PATH, def RELEASE_VERSION) {
             JAR_FILE = "usersubscription"
             break
         case "store-videogame-products-example":
-            JAR_FILE = "videogameproducts"
+            JAR_FILE = "videogamestore"
             break
         case "store-videogamestore-final-example":
             JAR_FILE = "videogamestore"

@@ -46,6 +46,15 @@ pipeline {
                 }
             }
         }
+        stage('Store Artifacts in Jenkins') {
+            steps {
+                script {
+                    archiveArtifacts artifacts: 'store-usersubscription-example/target/usersubscription.jar', followSymlinks: false
+                    archiveArtifacts artifacts: 'store-videogame-products-example/target/videogamestore.jar', followSymlinks: false
+                    archiveArtifacts artifacts: 'store-videogamestore-final-example/target/videogamestore.jar', followSymlinks: false
+                }
+            }
+        }
     }
     post {
         success {
