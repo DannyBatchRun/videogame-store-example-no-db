@@ -10,6 +10,27 @@ def createJarFile(def PATH) {
     }
 }
 
+def copyWorkspace(def PATH, def RELEASE_VERSION) {
+    def JAR_FILE
+    def NEW_FOLDER = "/home/daniele/releases/release/${RELEASE_VERSION}"
+    switch(PATH) {
+        case "store-usersubscription-example":
+            JAR_FILE = "usersubscription"
+            break
+        case "store-videogame-products-example":
+            JAR_FILE = "videogameproducts"
+            break
+        case "store-videogamestore-final-example":
+            JAR_FILE = "videogamestore"
+            break
+    }
+    sh("mkdir ${NEW_FOLDER}")
+    dir("${PATH}/target") {
+        sh("sudo cp ${JAR_FILE}.jar /home/daniele/releases/release/${RELEASE_VERSION}")
+    }
+    println "A backup has been stored in this folder. Please refer to this folder if you lost your data : ${NEW_FOLDER}"
+}
+
 def buildAndPushOnDocker(def PATH, def IMAGE_NAME, def IMAGE_TAG, def passwordEncrypted) {
     def USERNAME_DOCKERHUB = "dannybatchrun"
     try {
