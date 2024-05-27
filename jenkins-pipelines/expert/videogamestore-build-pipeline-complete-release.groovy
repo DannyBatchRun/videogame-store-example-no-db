@@ -14,7 +14,7 @@ pipeline {
         stage('Checkout Branch') {
             steps {
                 script {
-                    currentBuild.displayName = "Release-${RELEASE_VERSION}"
+                    currentBuild.displayName = "release/${RELEASE_VERSION}"
                     currentBuild.description = "Pipeline Build Number #${currentBuild.number}"
                     sh("git checkout ${params.BRANCH_NAME}")
                 }
