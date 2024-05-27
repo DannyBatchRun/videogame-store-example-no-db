@@ -14,6 +14,7 @@ pipeline {
         stage('Checkout Branch') {
             steps {
                 script {
+                    currentBuild.displayName = "Build-Release-${RELEASE_VERSION}"
                     sh("git checkout ${params.BRANCH_NAME}")
                 }
             }
@@ -28,11 +29,11 @@ pipeline {
                 }
             }
         }
-        stage('Push Release Branch') {
+        /*stage('Push Release Branch') {
             steps {
                 script {
-                    sh("git checkout -b release/${RELEASE_VERSION}")
-                    sh("git push -u origin release/${RELEASE_VERSION}")
+                    sh("git checkout -b release/${params.RELEASE_VERSION}")
+                    sh("git push -u origin release/${params.RELEASE_VERSION}")
                     sh("git branch")
                 }
             }
@@ -40,12 +41,12 @@ pipeline {
         stage('Copy JAR Artifacts') {
             steps {
                 script {
-                    service.copyWorkspace("store-usersubscription-example","${RELEASE_VERSION}")
-                    service.copyWorkspace("store-videogame-products-example","${RELEASE_VERSION}")
-                    service.copyWorkspace("store-videogamestore-final-example","${RELEASE_VERSION}")
+                    service.copyWorkspace("store-usersubscription-example","${params.RELEASE_VERSION}")
+                    service.copyWorkspace("store-videogame-products-example","${params.RELEASE_VERSION}")
+                    service.copyWorkspace("store-videogamestore-final-example","${params.RELEASE_VERSION}")
                 }
             }
-        }
+        }*/
         stage('Store Artifacts in Jenkins') {
             steps {
                 script {
