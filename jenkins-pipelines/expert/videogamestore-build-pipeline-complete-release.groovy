@@ -14,7 +14,8 @@ pipeline {
         stage('Checkout Branch') {
             steps {
                 script {
-                    currentBuild.displayName = "Build-Release-${RELEASE_VERSION}"
+                    currentBuild.displayName = "Release-${RELEASE_VERSION}"
+                    currentBuild.description = "Pipeline Build Number #${currentBuild.number}"
                     sh("git checkout ${params.BRANCH_NAME}")
                 }
             }
@@ -52,7 +53,7 @@ pipeline {
                 script {
                     archiveArtifacts artifacts: 'store-usersubscription-example/target/usersubscription.jar', followSymlinks: false
                     archiveArtifacts artifacts: 'store-videogame-products-example/target/videogamestore.jar', followSymlinks: false
-                    archiveArtifacts artifacts: 'store-videogamestore-final-example/target/videogamestorefinal.jar', followSymlinks: false
+                    archiveArtifacts artifacts: 'store-videogamestore-final-example/target/videogamestore.jar', followSymlinks: false
                 }
             }
         }
